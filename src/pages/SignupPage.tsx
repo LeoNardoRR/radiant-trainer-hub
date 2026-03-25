@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -18,9 +20,34 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"trainer" | "student">("trainer");
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !password) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await signUp(email, password, name, role);
+      toast.success("Conta criada com sucesso!");
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
       {/* Left */}
       <div className="hidden lg:flex lg:w-1/2 border-r border-border items-center justify-center p-12">
         <div className="max-w-md">
@@ -29,8 +56,7 @@ const SignupPage = () => {
           </motion.p>
           <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1} className="font-display font-light text-5xl tracking-tight leading-[1.1] mb-6">
             Profissionalize
-            <br />
-            seu serviço.
+            <br />seu serviço.
           </motion.h1>
           <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2} className="font-body font-light text-muted-foreground">
             7 dias grátis. Sem cartão de crédito.
@@ -39,9 +65,16 @@ const SignupPage = () => {
       </div>
 
       {/* Right */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="w-full max-w-sm space-y-8">
-          <div className="lg:hidden mb-10">
+      <div className="flex-1 flex items-center justify-center p-6 min-h-screen lg:min-h-0">
+        <motion.form
+          onSubmit={handleSubmit}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          custom={0}
+          className="w-full max-w-sm space-y-6"
+        >
+          <div className="lg:hidden mb-6">
             <p className="text-editorial-sm tracking-[0.2em]">FITFLOW</p>
           </div>
           <div>
@@ -55,6 +88,7 @@ const SignupPage = () => {
           {/* Role selector */}
           <div className="flex gap-[1px] bg-border">
             <button
+              type="button"
               onClick={() => setRole("trainer")}
               className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 ${
                 role === "trainer" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"
@@ -63,6 +97,7 @@ const SignupPage = () => {
               Personal Trainer
             </button>
             <button
+              type="button"
               onClick={() => setRole("student")}
               className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 ${
                 role === "student" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"
@@ -75,30 +110,25 @@ const SignupPage = () => {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-body text-muted-foreground mb-1.5 block">Nome completo</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="font-body font-light" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="font-body font-light h-12" />
             </div>
             <div>
               <label className="text-xs font-body text-muted-foreground mb-1.5 block">Email</label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" className="font-body font-light" />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" className="font-body font-light h-12" />
             </div>
             <div>
               <label className="text-xs font-body text-muted-foreground mb-1.5 block">Senha</label>
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Mínimo 8 caracteres" className="font-body font-light" />
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Mínimo 6 caracteres" className="font-body font-light h-12" />
             </div>
           </div>
-          <Link to="/dashboard">
-            <Button className="w-full text-editorial-sm py-5 mt-4">
-              Criar conta
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <Button type="submit" disabled={isLoading} className="w-full text-editorial-sm py-5 h-12">
+            {isLoading ? "Criando..." : "Criar conta"}
+            {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+          </Button>
           <p className="text-center text-xs font-body text-muted-foreground">
-            Ao criar conta, você concorda com os{" "}
-            <a href="#" className="hover:text-foreground transition-colors">Termos de Uso</a>{" "}
-            e{" "}
-            <a href="#" className="hover:text-foreground transition-colors">Política de Privacidade</a>
+            Ao criar conta, você concorda com os Termos e Política de Privacidade
           </p>
-        </motion.div>
+        </motion.form>
       </div>
     </div>
   );
