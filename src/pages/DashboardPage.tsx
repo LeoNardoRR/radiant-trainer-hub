@@ -2,6 +2,12 @@ import { motion } from "framer-motion";
 import { Calendar, Users, TrendingUp, AlertTriangle, Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSessions, useUpdateSessionStatus } from "@/hooks/useSessions";
+import { useStudents } from "@/hooks/useStudents";
+import { useNotifications } from "@/hooks/useNotifications";
+import { format, isToday, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -11,174 +17,201 @@ const fadeUp = {
   }),
 };
 
-const stats = [
-  { label: "Sessões esta semana", value: "24", icon: Calendar, change: "+3" },
-  { label: "Taxa de presença", value: "92%", icon: TrendingUp, change: "+5%" },
-  { label: "Alunos ativos", value: "18", icon: Users, change: "" },
-  { label: "Em risco", value: "3", icon: AlertTriangle, change: "" },
-];
-
-const pendingRequests = [
-  { id: 1, student: "Ana Silva", time: "Seg, 14:00", type: "Musculação", status: "pending" },
-  { id: 2, student: "Carlos Mendes", time: "Ter, 08:00", type: "Funcional", status: "pending" },
-  { id: 3, student: "Julia Santos", time: "Ter, 16:00", type: "Pilates", status: "pending" },
-];
-
-const alerts = [
-  { message: "Maria Oliveira não treina há 5 dias", type: "warning" },
-  { message: "Pedro Costa faltou 2x esta semana", type: "risk" },
-  { message: "Lucas Ferreira completou 30 treinos consecutivos!", type: "success" },
-];
-
-const todaySessions = [
-  { time: "07:00", student: "Roberto Lima", status: "completed" },
-  { time: "08:00", student: "Fernanda Alves", status: "completed" },
-  { time: "09:00", student: "Marcos Paulo", status: "current" },
-  { time: "10:00", student: "Camila Torres", status: "upcoming" },
-  { time: "14:00", student: "Ana Silva", status: "upcoming" },
-  { time: "16:00", student: "Bruno Santos", status: "upcoming" },
-];
-
 const DashboardPage = () => {
+  const { profile, role } = useAuth();
+  const { data: sessions } = useSessions();
+  const { data: students } = useStudents();
+  const { data: notifications } = useNotifications();
+  const updateStatus = useUpdateSessionStatus();
+
+  const today = new Date();
+  const todayStr = format(today, "yyyy-MM-dd");
+
+  const todaySessions = sessions?.filter((s) => s.date === todayStr) || [];
+  const pendingSessions = sessions?.filter((s) => s.status === "pending") || [];
+  const weekSessions = sessions?.filter((s) => {
+    const d = parseISO(s.date);
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+    return d >= weekStart && d < weekEnd;
+  }) || [];
+
+  const completedWeek = weekSessions.filter((s) => s.status === "completed").length;
+  const totalWeek = weekSessions.length;
+  const presenceRate = totalWeek > 0 ? Math.round((completedWeek / totalWeek) * 100) : 0;
+  const activeStudents = students?.filter((s) => s.status === "active").length || 0;
+  const atRiskStudents = students?.filter((s) => s.status === "at_risk").length || 0;
+
+  const recentAlerts = notifications?.slice(0, 3) || [];
+
+  const stats = [
+    { label: "Sessões esta semana", value: String(weekSessions.length), icon: Calendar },
+    { label: "Taxa de presença", value: `${presenceRate}%`, icon: TrendingUp },
+    { label: "Alunos ativos", value: String(activeStudents), icon: Users },
+    { label: "Em risco", value: String(atRiskStudents), icon: AlertTriangle },
+  ];
+
+  const handleApprove = (id: string, studentId: string) => {
+    updateStatus.mutate({ id, status: "approved", student_id: studentId });
+  };
+
+  const handleReject = (id: string, studentId: string) => {
+    updateStatus.mutate({ id, status: "rejected", student_id: studentId });
+  };
+
   return (
     <AppLayout>
-      <div className="space-y-10">
+      <div className="space-y-8">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-          <p className="text-editorial-sm text-muted-foreground mb-2">DASHBOARD</p>
-          <h1 className="font-display font-light text-3xl md:text-4xl tracking-tight">
-            Bom dia, Trainer
+          <p className="text-editorial-sm text-muted-foreground mb-2">
+            {role === "trainer" ? "DASHBOARD" : "MEU PAINEL"}
+          </p>
+          <h1 className="font-display font-light text-2xl md:text-4xl tracking-tight">
+            Olá, {profile?.full_name?.split(" ")[0] || "Usuário"}
           </h1>
-          <p className="font-body font-light text-muted-foreground mt-1">
-            Terça-feira, 25 de março de 2026
+          <p className="font-body font-light text-muted-foreground mt-1 text-sm">
+            {format(today, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>
         </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[1px] bg-border">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              custom={i + 1}
-              className="bg-background p-6"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <stat.icon className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
-                {stat.change && (
-                  <span className="text-editorial-sm text-success">{stat.change}</span>
+        {role === "trainer" && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-[1px] bg-border">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial="hidden"
+                animate="visible"
+                variants={fadeUp}
+                custom={i + 1}
+                className="bg-background p-4 md:p-6"
+              >
+                <stat.icon className="h-4 w-4 text-muted-foreground mb-3" strokeWidth={1.5} />
+                <p className="font-display font-light text-2xl md:text-3xl mb-1">{stat.value}</p>
+                <p className="text-editorial-sm text-muted-foreground text-[9px] md:text-[10px]">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Today's Schedule */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5} className="lg:col-span-1 card-editorial">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-editorial-sm">AGENDA DE HOJE</p>
+              <Link to="/schedule" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[9px]">
+                Ver tudo <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            {todaySessions.length === 0 ? (
+              <p className="text-sm text-muted-foreground font-body font-light py-8 text-center">
+                Nenhuma sessão hoje
+              </p>
+            ) : (
+              <div className="space-y-0">
+                {todaySessions.map((session) => (
+                  <div key={session.id} className="flex items-center gap-3 py-3 border-t border-border">
+                    <span className="font-display text-xs w-12 shrink-0 text-muted-foreground">
+                      {session.start_time?.slice(0, 5)}
+                    </span>
+                    <span className="font-body text-sm font-light flex-1 truncate">
+                      {(session.student as any)?.full_name || (session.trainer as any)?.full_name || "—"}
+                    </span>
+                    <span className={`status-badge ${
+                      session.status === "approved" ? "status-approved" :
+                      session.status === "pending" ? "status-pending" :
+                      session.status === "completed" ? "status-approved" : "status-rejected"
+                    }`}>
+                      {session.status === "approved" ? "Confirmado" :
+                       session.status === "pending" ? "Pendente" :
+                       session.status === "completed" ? "Concluído" : session.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Pending Requests (trainer only) */}
+          {role === "trainer" && (
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={6} className="lg:col-span-1 card-editorial">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-editorial-sm">PENDENTES</p>
+                {pendingSessions.length > 0 && (
+                  <span className="text-editorial-sm text-warning">{pendingSessions.length}</span>
                 )}
               </div>
-              <p className="font-display font-light text-3xl mb-1">{stat.value}</p>
-              <p className="text-editorial-sm text-muted-foreground">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Today's Schedule */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={5}
-            className="lg:col-span-1 card-editorial"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-editorial-sm">AGENDA DE HOJE</p>
-              <Link to="/schedule" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-                Ver tudo <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="space-y-0">
-              {todaySessions.map((session) => (
-                <div
-                  key={session.time + session.student}
-                  className={`flex items-center gap-4 py-3 border-t border-border ${
-                    session.status === "current" ? "bg-accent/30 -mx-4 px-4" : ""
-                  }`}
-                >
-                  <span className="font-display text-sm w-14 shrink-0 text-muted-foreground">
-                    {session.time}
-                  </span>
-                  <span className="font-body text-sm font-light flex-1">{session.student}</span>
-                  {session.status === "completed" && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-success" strokeWidth={1.5} />
-                  )}
-                  {session.status === "current" && (
-                    <span className="status-badge status-approved">Agora</span>
-                  )}
-                  {session.status === "upcoming" && (
-                    <Clock className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Pending Requests */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={6}
-            className="lg:col-span-1 card-editorial"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-editorial-sm">SOLICITAÇÕES PENDENTES</p>
-              <span className="text-editorial-sm text-warning">{pendingRequests.length}</span>
-            </div>
-            <div className="space-y-0">
-              {pendingRequests.map((req) => (
-                <div key={req.id} className="py-4 border-t border-border">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-body text-sm">{req.student}</p>
-                      <p className="text-xs text-muted-foreground font-body font-light">
-                        {req.time} · {req.type}
-                      </p>
+              {pendingSessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground font-body font-light py-8 text-center">
+                  Nenhuma solicitação pendente
+                </p>
+              ) : (
+                <div className="space-y-0">
+                  {pendingSessions.slice(0, 5).map((req) => (
+                    <div key={req.id} className="py-3 border-t border-border">
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="min-w-0">
+                          <p className="font-body text-sm truncate">{(req.student as any)?.full_name}</p>
+                          <p className="text-[11px] text-muted-foreground font-body font-light">
+                            {format(parseISO(req.date), "EEE, dd/MM", { locale: ptBR })} · {req.start_time?.slice(0, 5)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={() => handleApprove(req.id, req.student_id)}
+                          className="flex-1 py-1.5 text-editorial-sm border border-success text-success hover:bg-success hover:text-success-foreground transition-colors duration-300 text-[9px]"
+                        >
+                          Aprovar
+                        </button>
+                        <button
+                          onClick={() => handleReject(req.id, req.student_id)}
+                          className="flex-1 py-1.5 text-editorial-sm border border-border text-muted-foreground hover:border-risk hover:text-risk transition-colors duration-300 text-[9px]"
+                        >
+                          Recusar
+                        </button>
+                      </div>
                     </div>
-                    <span className="status-badge status-pending">Pendente</span>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button className="flex-1 py-1.5 text-editorial-sm border border-success text-success hover:bg-success hover:text-success-foreground transition-colors duration-300">
-                      Aprovar
-                    </button>
-                    <button className="flex-1 py-1.5 text-editorial-sm border border-border text-muted-foreground hover:border-risk hover:text-risk transition-colors duration-300">
-                      Recusar
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </motion.div>
+              )}
+            </motion.div>
+          )}
 
           {/* Alerts */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={7}
-            className="lg:col-span-1 card-editorial"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-editorial-sm">ALERTAS INTELIGENTES</p>
-              <Link to="/notifications" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={7} className="lg:col-span-1 card-editorial">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-editorial-sm">ALERTAS</p>
+              <Link to="/notifications" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[9px]">
                 Ver tudo <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
-            <div className="space-y-0">
-              {alerts.map((alert, i) => (
-                <div key={i} className="flex items-start gap-3 py-4 border-t border-border">
-                  {alert.type === "warning" && <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" strokeWidth={1.5} />}
-                  {alert.type === "risk" && <XCircle className="h-4 w-4 text-risk shrink-0 mt-0.5" strokeWidth={1.5} />}
-                  {alert.type === "success" && <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" strokeWidth={1.5} />}
-                  <p className="font-body font-light text-sm">{alert.message}</p>
-                </div>
-              ))}
-            </div>
+            {recentAlerts.length === 0 ? (
+              <p className="text-sm text-muted-foreground font-body font-light py-8 text-center">
+                Nenhum alerta recente
+              </p>
+            ) : (
+              <div className="space-y-0">
+                {recentAlerts.map((alert) => (
+                  <div key={alert.id} className="flex items-start gap-3 py-3 border-t border-border">
+                    {alert.type === "retention" ? (
+                      <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5" strokeWidth={1.5} />
+                    ) : alert.type === "achievement" ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" strokeWidth={1.5} />
+                    ) : (
+                      <Calendar className="h-3.5 w-3.5 text-foreground shrink-0 mt-0.5" strokeWidth={1.5} />
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-body text-sm truncate">{alert.title}</p>
+                      <p className="text-[11px] font-body font-light text-muted-foreground truncate">{alert.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
       </div>

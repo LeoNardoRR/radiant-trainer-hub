@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
-import { Bell, Calendar, AlertTriangle, TrendingUp, CheckCircle2, Clock } from "lucide-react";
+import { Bell, Calendar, AlertTriangle, TrendingUp } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import { useNotifications, useMarkNotificationRead, useMarkAllRead } from "@/hooks/useNotifications";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -10,31 +13,7 @@ const fadeUp = {
   }),
 };
 
-type NotifType = "scheduling" | "retention" | "achievement" | "system";
-
-interface Notification {
-  id: number;
-  type: NotifType;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-}
-
-const notifications: Notification[] = [
-  { id: 1, type: "scheduling", title: "Novo agendamento", message: "Ana Silva solicitou sessão para Seg, 14:00", time: "Há 5 min", read: false },
-  { id: 2, type: "retention", title: "Aluno em risco", message: "Maria Oliveira não treina há 5 dias", time: "Há 1h", read: false },
-  { id: 3, type: "scheduling", title: "Novo agendamento", message: "Carlos Mendes solicitou sessão para Ter, 08:00", time: "Há 2h", read: false },
-  { id: 4, type: "retention", title: "Faltas consecutivas", message: "Pedro Costa faltou 2x esta semana", time: "Há 3h", read: true },
-  { id: 5, type: "achievement", title: "Conquista!", message: "Lucas Ferreira completou 30 treinos consecutivos", time: "Há 4h", read: true },
-  { id: 6, type: "system", title: "Horários vagos", message: "Você tem 3 horários disponíveis hoje", time: "Há 6h", read: true },
-  { id: 7, type: "retention", title: "Aluno inativo", message: "Camila Torres não treina há 15 dias", time: "Ontem", read: true },
-  { id: 8, type: "scheduling", title: "Cancelamento", message: "Bruno Santos cancelou sessão de Sex, 16:00", time: "Ontem", read: true },
-  { id: 9, type: "achievement", title: "Alta consistência", message: "Fernanda Alves mantém 95% de frequência este mês", time: "2 dias atrás", read: true },
-  { id: 10, type: "retention", title: "Risco de abandono", message: "Bruno Santos cancelou 3 sessões no último mês", time: "2 dias atrás", read: true },
-];
-
-const iconMap: Record<NotifType, typeof Bell> = {
+const iconMap: Record<string, typeof Bell> = {
   scheduling: Calendar,
   retention: AlertTriangle,
   achievement: TrendingUp,
@@ -42,85 +21,104 @@ const iconMap: Record<NotifType, typeof Bell> = {
 };
 
 const NotificationsPage = () => {
-  const unread = notifications.filter((n) => !n.read).length;
+  const { data: notifications, isLoading } = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllRead();
+
+  const unread = notifications?.filter((n) => !n.is_read) || [];
+  const read = notifications?.filter((n) => n.is_read) || [];
+
+  const handleClick = (id: string, isRead: boolean) => {
+    if (!isRead) markRead.mutate(id);
+  };
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="flex items-start justify-between">
           <div>
             <p className="text-editorial-sm text-muted-foreground mb-2">NOTIFICAÇÕES</p>
-            <h1 className="font-display font-light text-3xl tracking-tight">Centro de alertas</h1>
+            <h1 className="font-display font-light text-2xl md:text-3xl tracking-tight">Centro de alertas</h1>
           </div>
-          {unread > 0 && (
-            <button className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors">
+          {unread.length > 0 && (
+            <button
+              onClick={() => markAllRead.mutate()}
+              className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors text-[9px]"
+            >
               Marcar todas como lidas
             </button>
           )}
         </motion.div>
 
-        {unread > 0 && (
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}>
-            <p className="text-editorial-sm text-muted-foreground mb-4">NÃO LIDAS ({unread})</p>
-            <div className="space-y-0">
-              {notifications
-                .filter((n) => !n.read)
-                .map((notif, i) => {
-                  const Icon = iconMap[notif.type];
-                  return (
-                    <motion.div
-                      key={notif.id}
-                      initial="hidden"
-                      animate="visible"
-                      variants={fadeUp}
-                      custom={i + 2}
-                      className="flex gap-4 py-5 border-t border-border hover:bg-accent/30 transition-colors duration-300 px-3 -mx-3 cursor-pointer"
-                    >
-                      <div className="w-8 h-8 border border-foreground/10 flex items-center justify-center shrink-0">
-                        <Icon className="h-3.5 w-3.5 text-foreground" strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4">
-                          <p className="font-body text-sm">{notif.title}</p>
-                          <span className="text-xs text-muted-foreground font-body shrink-0">{notif.time}</span>
-                        </div>
-                        <p className="text-sm font-body font-light text-muted-foreground mt-0.5">{notif.message}</p>
-                      </div>
-                      <div className="w-2 h-2 rounded-full bg-foreground shrink-0 mt-2" />
-                    </motion.div>
-                  );
-                })}
-            </div>
-          </motion.div>
-        )}
-
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5}>
-          <p className="text-editorial-sm text-muted-foreground mb-4">ANTERIORES</p>
-          <div className="space-y-0">
-            {notifications
-              .filter((n) => n.read)
-              .map((notif, i) => {
-                const Icon = iconMap[notif.type];
-                return (
-                  <div
-                    key={notif.id}
-                    className="flex gap-4 py-5 border-t border-border hover:bg-accent/30 transition-colors duration-300 px-3 -mx-3 cursor-pointer opacity-60"
-                  >
-                    <div className="w-8 h-8 border border-border flex items-center justify-center shrink-0">
-                      <Icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <p className="font-body text-sm">{notif.title}</p>
-                        <span className="text-xs text-muted-foreground font-body shrink-0">{notif.time}</span>
-                      </div>
-                      <p className="text-sm font-body font-light text-muted-foreground mt-0.5">{notif.message}</p>
-                    </div>
-                  </div>
-                );
-              })}
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground font-body font-light py-12 text-center animate-pulse">Carregando...</p>
+        ) : notifications?.length === 0 ? (
+          <div className="text-center py-16">
+            <Bell className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" strokeWidth={1} />
+            <p className="text-sm text-muted-foreground font-body font-light">Nenhuma notificação ainda</p>
           </div>
-        </motion.div>
+        ) : (
+          <>
+            {unread.length > 0 && (
+              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}>
+                <p className="text-editorial-sm text-muted-foreground mb-3">NÃO LIDAS ({unread.length})</p>
+                <div className="space-y-0">
+                  {unread.map((notif) => {
+                    const Icon = iconMap[notif.type] || Bell;
+                    return (
+                      <div
+                        key={notif.id}
+                        onClick={() => handleClick(notif.id, false)}
+                        className="flex gap-3 py-4 border-t border-border hover:bg-accent/30 transition-colors duration-300 px-3 -mx-3 cursor-pointer"
+                      >
+                        <div className="w-7 h-7 border border-foreground/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-3 w-3 text-foreground" strokeWidth={1.5} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-body text-sm truncate">{notif.title}</p>
+                            <span className="text-[10px] text-muted-foreground font-body shrink-0">
+                              {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: ptBR })}
+                            </span>
+                          </div>
+                          <p className="text-[11px] font-body font-light text-muted-foreground truncate">{notif.message}</p>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-foreground shrink-0 mt-2" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {read.length > 0 && (
+              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3}>
+                <p className="text-editorial-sm text-muted-foreground mb-3">ANTERIORES</p>
+                <div className="space-y-0">
+                  {read.map((notif) => {
+                    const Icon = iconMap[notif.type] || Bell;
+                    return (
+                      <div key={notif.id} className="flex gap-3 py-4 border-t border-border px-3 -mx-3 opacity-50">
+                        <div className="w-7 h-7 border border-border flex items-center justify-center shrink-0">
+                          <Icon className="h-3 w-3 text-muted-foreground" strokeWidth={1.5} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-body text-sm truncate">{notif.title}</p>
+                            <span className="text-[10px] text-muted-foreground font-body shrink-0">
+                              {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: ptBR })}
+                            </span>
+                          </div>
+                          <p className="text-[11px] font-body font-light text-muted-foreground truncate">{notif.message}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </>
+        )}
       </div>
     </AppLayout>
   );
