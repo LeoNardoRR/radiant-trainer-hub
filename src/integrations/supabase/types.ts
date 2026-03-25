@@ -14,16 +14,275 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          start_time: string
+          trainer_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          start_time: string
+          trainer_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          start_time?: string
+          trainer_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          specialty: string | null
+          status: Database["public"]["Enums"]["student_status"]
+          trainer_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          specialty?: string | null
+          status?: Database["public"]["Enums"]["student_status"]
+          trainer_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          specialty?: string | null
+          status?: Database["public"]["Enums"]["student_status"]
+          trainer_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          notes: string | null
+          session_type: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["session_status"]
+          student_id: string
+          suggested_date: string | null
+          suggested_start_time: string | null
+          trainer_id: string
+          trainer_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          session_type?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["session_status"]
+          student_id: string
+          suggested_date?: string | null
+          suggested_start_time?: string | null
+          trainer_id: string
+          trainer_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          session_type?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          student_id?: string
+          suggested_date?: string | null
+          suggested_start_time?: string | null
+          trainer_id?: string
+          trainer_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trainer_settings: {
+        Row: {
+          break_between: number
+          cancel_limit_hours: number
+          created_at: string
+          id: string
+          max_sessions_per_day: number
+          reminder_hours_before: number
+          retention_alert_days_critical: number
+          retention_alert_days_light: number
+          retention_alert_days_moderate: number
+          session_duration: number
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          break_between?: number
+          cancel_limit_hours?: number
+          created_at?: string
+          id?: string
+          max_sessions_per_day?: number
+          reminder_hours_before?: number
+          retention_alert_days_critical?: number
+          retention_alert_days_light?: number
+          retention_alert_days_moderate?: number
+          session_duration?: number
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          break_between?: number
+          cancel_limit_hours?: number
+          created_at?: string
+          id?: string
+          max_sessions_per_day?: number
+          reminder_hours_before?: number
+          retention_alert_days_critical?: number
+          retention_alert_days_light?: number
+          retention_alert_days_moderate?: number
+          session_duration?: number
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "trainer" | "student"
+      session_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+        | "completed"
+        | "missed"
+      student_status: "active" | "inactive" | "at_risk"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +409,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["trainer", "student"],
+      session_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled",
+        "completed",
+        "missed",
+      ],
+      student_status: ["active", "inactive", "at_risk"],
+    },
   },
 } as const
