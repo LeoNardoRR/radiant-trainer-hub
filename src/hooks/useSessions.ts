@@ -4,20 +4,37 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export const useSessions = () => {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
 
   return useQuery({
     queryKey: ["sessions", user?.id],
     queryFn: async () => {
-      const query = supabase
+      const { data, error } = await supabase
         .from("sessions")
-        .select("*, student:profiles!sessions_student_id_fkey(*), trainer:profiles!sessions_trainer_id_fkey(*)")
+        .select("*")
         .order("date", { ascending: true })
         .order("start_time", { ascending: true });
-
-      const { data, error } = await query;
       if (error) throw error;
-      return data;
+
+      // Fetch profiles for all involved user IDs
+      const userIds = new Set<string>();
+      data?.forEach((s) => {
+        userIds.add(s.student_id);
+        userIds.add(s.trainer_id);
+      });
+
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", Array.from(userIds));
+
+      const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
+
+      return data.map((s) => ({
+        ...s,
+        student: profileMap.get(s.student_id) || null,
+        trainer: profileMap.get(s.trainer_id) || null,
+      }));
     },
     enabled: !!user,
   });
@@ -36,6 +53,25 @@ export const useCreateSession = () => {
       session_type?: string;
       notes?: string;
     }) => {
+      // Check for double booking
+      const { data: existing } = await supabase
+        .from("sessions")
+        .select("id")
+        .eq("trainer_id", session.trainer_id)
+        .eq("date", session.date)
+        .eq("start_time", session.start_time)
+        .in("status", ["pending", "approved"]);
+
+      if (existing && existing.length > 0) {
+        throw new Error("Este horário já está ocupado. Escolha outro.");
+      }
+
+      // Block past dates
+      const sessionDate = new Date(`${session.date}T${session.start_time}`);
+      if (sessionDate < new Date()) {
+        throw new Error("Não é possível agendar no passado.");
+      }
+
       const { data, error } = await supabase
         .from("sessions")
         .insert({ ...session, student_id: user!.id })
@@ -43,7 +79,6 @@ export const useCreateSession = () => {
         .single();
       if (error) throw error;
 
-      // Create notification for trainer
       await supabase.from("notifications").insert({
         user_id: session.trainer_id,
         title: "Novo agendamento pendente",
@@ -90,7 +125,12 @@ export const useUpdateSessionStatus = () => {
 
       await supabase.from("notifications").insert({
         user_id: student_id,
-        title: status === "approved" ? "Agendamento aprovado" : status === "rejected" ? "Agendamento recusado" : "Atualização de sessão",
+        title:
+          status === "approved"
+            ? "Agendamento aprovado"
+            : status === "rejected"
+            ? "Agendamento recusado"
+            : "Atualização de sessão",
         message: messages[status] || "Status atualizado.",
         type: "scheduling",
       });

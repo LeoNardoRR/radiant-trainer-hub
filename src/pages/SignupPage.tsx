@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -16,10 +16,13 @@ const fadeUp = {
 };
 
 const SignupPage = () => {
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"trainer" | "student">("trainer");
+  const [role, setRole] = useState<"trainer" | "student">(
+    searchParams.get("role") === "student" ? "student" : "trainer"
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -37,8 +40,7 @@ const SignupPage = () => {
     setIsLoading(true);
     try {
       await signUp(email, password, name, role);
-      toast.success("Conta criada com sucesso!");
-      navigate("/dashboard");
+      toast.success("Conta criada! Verifique seu email para confirmar.");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -90,8 +92,8 @@ const SignupPage = () => {
             <button
               type="button"
               onClick={() => setRole("trainer")}
-              className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 ${
-                role === "trainer" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"
+              className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 min-h-[48px] ${
+                role === "trainer" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground active:bg-accent"
               }`}
             >
               Personal Trainer
@@ -99,8 +101,8 @@ const SignupPage = () => {
             <button
               type="button"
               onClick={() => setRole("student")}
-              className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 ${
-                role === "student" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"
+              className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 min-h-[48px] ${
+                role === "student" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground active:bg-accent"
               }`}
             >
               Aluno
@@ -122,8 +124,17 @@ const SignupPage = () => {
             </div>
           </div>
           <Button type="submit" disabled={isLoading} className="w-full text-editorial-sm py-5 h-12">
-            {isLoading ? "Criando..." : "Criar conta"}
-            {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Criando...
+              </>
+            ) : (
+              <>
+                Criar conta
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
           </Button>
           <p className="text-center text-xs font-body text-muted-foreground">
             Ao criar conta, você concorda com os Termos e Política de Privacidade

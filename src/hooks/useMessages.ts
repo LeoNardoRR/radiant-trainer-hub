@@ -30,26 +30,34 @@ export const useConversations = () => {
   return useQuery({
     queryKey: ["conversations", user?.id],
     queryFn: async () => {
-      // Get all messages involving user, then group by conversation partner
       const { data, error } = await supabase
         .from("messages")
-        .select("*, sender:profiles!messages_sender_id_fkey(full_name), receiver:profiles!messages_receiver_id_fkey(full_name)")
+        .select("*")
         .or(`sender_id.eq.${user!.id},receiver_id.eq.${user!.id}`)
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Group by conversation partner
+      // Collect all partner IDs
       const convMap = new Map<string, typeof data[0]>();
       data?.forEach((msg) => {
         const partnerId = msg.sender_id === user!.id ? msg.receiver_id : msg.sender_id;
         if (!convMap.has(partnerId)) convMap.set(partnerId, msg);
       });
 
+      // Fetch partner profiles
+      const partnerIds = Array.from(convMap.keys());
+      if (partnerIds.length === 0) return [];
+
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", partnerIds);
+
+      const profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
+
       return Array.from(convMap.entries()).map(([partnerId, lastMsg]) => ({
         partnerId,
-        partnerName: lastMsg.sender_id === user!.id
-          ? (lastMsg.receiver as any)?.full_name || "Usuário"
-          : (lastMsg.sender as any)?.full_name || "Usuário",
+        partnerName: profileMap.get(partnerId) || "Usuário",
         lastMessage: lastMsg.content,
         time: lastMsg.created_at,
         unread: lastMsg.receiver_id === user!.id && !lastMsg.is_read,

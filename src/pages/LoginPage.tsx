@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -88,8 +88,17 @@ const LoginPage = () => {
             </div>
           </div>
           <Button type="submit" disabled={isLoading} className="w-full text-editorial-sm py-5 h-12">
-            {isLoading ? "Entrando..." : "Entrar"}
-            {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Entrando...
+              </>
+            ) : (
+              <>
+                Entrar
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
           </Button>
         </motion.form>
       </div>

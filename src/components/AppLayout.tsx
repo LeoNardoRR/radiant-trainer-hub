@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Calendar, Users, Bell, BarChart3, MessageSquare, Settings, Menu, X, LogOut,
+  LayoutDashboard, Calendar, Users, Bell, BarChart3, MessageSquare, Settings, LogOut,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 
@@ -23,10 +21,10 @@ const studentNav = [
   { icon: Calendar, label: "Agendar", path: "/schedule" },
   { icon: Bell, label: "Notificações", path: "/notifications" },
   { icon: MessageSquare, label: "Mensagens", path: "/messages" },
+  { icon: Settings, label: "Config", path: "/settings" },
 ];
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, role, signOut } = useAuth();
@@ -81,7 +79,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <p className="text-sm font-body truncate">{profile?.full_name || "Usuário"}</p>
               <p className="text-[10px] text-muted-foreground font-body truncate">{profile?.email}</p>
             </div>
-            <button onClick={handleSignOut} title="Sair">
+            <button onClick={handleSignOut} title="Sair" className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded transition-colors">
               <LogOut className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" strokeWidth={1.5} />
             </button>
           </div>
@@ -89,8 +87,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </aside>
 
       {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border safe-bottom">
-        <div className="flex items-center justify-around py-2 px-1">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border">
+        <div className="flex items-center justify-around py-1.5 px-1" style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}>
           {navItems.slice(0, 5).map((item) => {
             const active = location.pathname === item.path;
             const showBadge = item.path === "/notifications" && unreadCount > 0;
@@ -98,32 +96,25 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center gap-0.5 py-1 px-2 relative transition-colors ${
-                  active ? "text-foreground" : "text-muted-foreground"
+                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 relative transition-colors min-h-[48px] min-w-[48px] justify-center ${
+                  active ? "text-foreground" : "text-muted-foreground active:text-foreground"
                 }`}
               >
                 <item.icon className="h-5 w-5" strokeWidth={1.5} />
                 <span className="text-[9px] font-body">{item.label}</span>
                 {showBadge && (
-                  <span className="absolute -top-0.5 right-0 w-4 h-4 rounded-full bg-foreground text-primary-foreground text-[8px] flex items-center justify-center font-display">
+                  <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-foreground text-primary-foreground text-[8px] flex items-center justify-center font-display">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </Link>
             );
           })}
-          <button
-            onClick={handleSignOut}
-            className="flex flex-col items-center gap-0.5 py-1 px-2 text-muted-foreground"
-          >
-            <LogOut className="h-5 w-5" strokeWidth={1.5} />
-            <span className="text-[9px] font-body">Sair</span>
-          </button>
         </div>
       </nav>
 
       {/* Main */}
-      <main className="flex-1 lg:ml-60 pb-20 lg:pb-0">
+      <main className="flex-1 lg:ml-60 pb-24 lg:pb-0">
         <div className="p-4 md:p-8 lg:p-10 max-w-7xl mx-auto">{children}</div>
       </main>
     </div>

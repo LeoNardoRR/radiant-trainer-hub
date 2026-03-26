@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
-import { Calendar, Users, TrendingUp, AlertTriangle, Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { Calendar, Users, TrendingUp, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSessions";
 import { useStudents } from "@/hooks/useStudents";
 import { useNotifications } from "@/hooks/useNotifications";
-import { format, isToday, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const fadeUp = {
@@ -46,25 +46,24 @@ const DashboardPage = () => {
 
   const recentAlerts = notifications?.slice(0, 3) || [];
 
-  const stats = [
+  const trainerStats = [
     { label: "Sessões esta semana", value: String(weekSessions.length), icon: Calendar },
     { label: "Taxa de presença", value: `${presenceRate}%`, icon: TrendingUp },
     { label: "Alunos ativos", value: String(activeStudents), icon: Users },
     { label: "Em risco", value: String(atRiskStudents), icon: AlertTriangle },
   ];
 
-  const handleApprove = (id: string, studentId: string) => {
-    updateStatus.mutate({ id, status: "approved", student_id: studentId });
-  };
+  const studentStats = [
+    { label: "Sessões esta semana", value: String(weekSessions.length), icon: Calendar },
+    { label: "Sessões hoje", value: String(todaySessions.length), icon: Calendar },
+    { label: "Pendentes", value: String(pendingSessions.length), icon: AlertTriangle },
+  ];
 
-  const handleReject = (id: string, studentId: string) => {
-    updateStatus.mutate({ id, status: "rejected", student_id: studentId });
-  };
+  const stats = role === "trainer" ? trainerStats : studentStats;
 
   return (
     <AppLayout>
-      <div className="space-y-8">
-        {/* Header */}
+      <div className="space-y-6 md:space-y-8">
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
           <p className="text-editorial-sm text-muted-foreground mb-2">
             {role === "trainer" ? "DASHBOARD" : "MEU PAINEL"}
@@ -78,31 +77,29 @@ const DashboardPage = () => {
         </motion.div>
 
         {/* Stats */}
-        {role === "trainer" && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-[1px] bg-border">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial="hidden"
-                animate="visible"
-                variants={fadeUp}
-                custom={i + 1}
-                className="bg-background p-4 md:p-6"
-              >
-                <stat.icon className="h-4 w-4 text-muted-foreground mb-3" strokeWidth={1.5} />
-                <p className="font-display font-light text-2xl md:text-3xl mb-1">{stat.value}</p>
-                <p className="text-editorial-sm text-muted-foreground text-[9px] md:text-[10px]">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        )}
+        <div className={`grid grid-cols-2 ${role === "trainer" ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-[1px] bg-border`}>
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              custom={i + 1}
+              className="bg-background p-4 md:p-6"
+            >
+              <stat.icon className="h-4 w-4 text-muted-foreground mb-3" strokeWidth={1.5} />
+              <p className="font-display font-light text-2xl md:text-3xl mb-1">{stat.value}</p>
+              <p className="text-editorial-sm text-muted-foreground text-[9px] md:text-[10px]">{stat.label}</p>
+            </motion.div>
+          ))}
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Today's Schedule */}
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5} className="lg:col-span-1 card-editorial">
             <div className="flex items-center justify-between mb-4">
               <p className="text-editorial-sm">AGENDA DE HOJE</p>
-              <Link to="/schedule" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[9px]">
+              <Link to="/schedule" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[9px] min-h-[44px] px-2">
                 Ver tudo <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -113,7 +110,7 @@ const DashboardPage = () => {
             ) : (
               <div className="space-y-0">
                 {todaySessions.map((session) => (
-                  <div key={session.id} className="flex items-center gap-3 py-3 border-t border-border">
+                  <div key={session.id} className="flex items-center gap-3 py-3 border-t border-border min-h-[52px]">
                     <span className="font-display text-xs w-12 shrink-0 text-muted-foreground">
                       {session.start_time?.slice(0, 5)}
                     </span>
@@ -135,7 +132,7 @@ const DashboardPage = () => {
             )}
           </motion.div>
 
-          {/* Pending Requests (trainer only) */}
+          {/* Pending Requests */}
           {role === "trainer" && (
             <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={6} className="lg:col-span-1 card-editorial">
               <div className="flex items-center justify-between mb-4">
@@ -162,14 +159,14 @@ const DashboardPage = () => {
                       </div>
                       <div className="flex gap-2 mt-2">
                         <button
-                          onClick={() => handleApprove(req.id, req.student_id)}
-                          className="flex-1 py-1.5 text-editorial-sm border border-success text-success hover:bg-success hover:text-success-foreground transition-colors duration-300 text-[9px]"
+                          onClick={() => updateStatus.mutate({ id: req.id, status: "approved", student_id: req.student_id })}
+                          className="flex-1 py-2.5 text-editorial-sm border border-success text-success hover:bg-success hover:text-success-foreground transition-colors duration-300 text-[9px] min-h-[44px]"
                         >
                           Aprovar
                         </button>
                         <button
-                          onClick={() => handleReject(req.id, req.student_id)}
-                          className="flex-1 py-1.5 text-editorial-sm border border-border text-muted-foreground hover:border-risk hover:text-risk transition-colors duration-300 text-[9px]"
+                          onClick={() => updateStatus.mutate({ id: req.id, status: "rejected", student_id: req.student_id })}
+                          className="flex-1 py-2.5 text-editorial-sm border border-border text-muted-foreground hover:border-risk hover:text-risk transition-colors duration-300 text-[9px] min-h-[44px]"
                         >
                           Recusar
                         </button>
@@ -185,7 +182,7 @@ const DashboardPage = () => {
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={7} className="lg:col-span-1 card-editorial">
             <div className="flex items-center justify-between mb-4">
               <p className="text-editorial-sm">ALERTAS</p>
-              <Link to="/notifications" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[9px]">
+              <Link to="/notifications" className="text-editorial-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[9px] min-h-[44px] px-2">
                 Ver tudo <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -196,7 +193,7 @@ const DashboardPage = () => {
             ) : (
               <div className="space-y-0">
                 {recentAlerts.map((alert) => (
-                  <div key={alert.id} className="flex items-start gap-3 py-3 border-t border-border">
+                  <div key={alert.id} className="flex items-start gap-3 py-3 border-t border-border min-h-[52px]">
                     {alert.type === "retention" ? (
                       <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5" strokeWidth={1.5} />
                     ) : alert.type === "achievement" ? (
