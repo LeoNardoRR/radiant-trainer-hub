@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          trainer_id: string
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          trainer_id: string
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          trainer_id?: string
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -265,6 +295,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_trainer_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
