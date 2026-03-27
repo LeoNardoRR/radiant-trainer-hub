@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Dumbbell, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -40,7 +40,8 @@ const SignupPage = () => {
     setIsLoading(true);
     try {
       await signUp(email, password, name, role);
-      toast.success("Conta criada! Verifique seu email para confirmar.");
+      toast.success("Conta criada com sucesso!");
+      navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -51,16 +52,20 @@ const SignupPage = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row">
       {/* Left */}
-      <div className="hidden lg:flex lg:w-1/2 border-r border-border items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/5 via-primary/10 to-success/5 items-center justify-center p-12 border-r border-border">
         <div className="max-w-md">
-          <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={0} className="text-editorial-sm text-muted-foreground mb-6">
-            FITFLOW
-          </motion.p>
-          <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1} className="font-display font-light text-5xl tracking-tight leading-[1.1] mb-6">
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="flex items-center gap-2 mb-8">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-display text-lg font-bold">F</span>
+            </div>
+            <span className="text-editorial-sm tracking-[0.15em]">APPFIT</span>
+          </motion.div>
+          <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1}
+            className="font-display font-semibold text-5xl tracking-tight leading-[1.1] mb-4">
             Profissionalize
-            <br />seu serviço.
+            <br /><span className="bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">seu serviço.</span>
           </motion.h1>
-          <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2} className="font-body font-light text-muted-foreground">
+          <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2} className="font-body text-muted-foreground text-lg">
             7 dias grátis. Sem cartão de crédito.
           </motion.p>
         </div>
@@ -68,72 +73,62 @@ const SignupPage = () => {
 
       {/* Right */}
       <div className="flex-1 flex items-center justify-center p-6 min-h-screen lg:min-h-0">
-        <motion.form
-          onSubmit={handleSubmit}
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
-          custom={0}
-          className="w-full max-w-sm space-y-6"
-        >
-          <div className="lg:hidden mb-6">
-            <p className="text-editorial-sm tracking-[0.2em]">FITFLOW</p>
+        <motion.form onSubmit={handleSubmit} initial="hidden" animate="visible" variants={fadeUp} custom={0} className="w-full max-w-sm space-y-6">
+          <div className="lg:hidden mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-display text-sm font-bold">F</span>
+            </div>
+            <span className="text-editorial-sm tracking-[0.15em]">APPFIT</span>
           </div>
           <div>
-            <h2 className="font-display font-light text-2xl tracking-tight mb-2">Criar conta</h2>
-            <p className="font-body font-light text-sm text-muted-foreground">
+            <h2 className="font-display font-semibold text-2xl tracking-tight mb-2">Criar conta</h2>
+            <p className="font-body text-sm text-muted-foreground">
               Já tem conta?{" "}
-              <Link to="/login" className="text-foreground hover:underline">Entrar</Link>
+              <Link to="/login" className="text-primary font-medium hover:underline">Entrar</Link>
             </p>
           </div>
 
           {/* Role selector */}
-          <div className="flex gap-[1px] bg-border">
-            <button
-              type="button"
-              onClick={() => setRole("trainer")}
-              className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 min-h-[48px] ${
-                role === "trainer" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground active:bg-accent"
-              }`}
-            >
-              Personal Trainer
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setRole("trainer")}
+              className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] ${
+                role === "trainer"
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
+              }`}>
+              <Dumbbell className="h-5 w-5" strokeWidth={role === "trainer" ? 2.2 : 1.5} />
+              <span className="text-xs font-display font-medium">Personal Trainer</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setRole("student")}
-              className={`flex-1 py-3 text-editorial-sm transition-colors duration-300 min-h-[48px] ${
-                role === "student" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground active:bg-accent"
-              }`}
-            >
-              Aluno
+            <button type="button" onClick={() => setRole("student")}
+              className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] ${
+                role === "student"
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
+              }`}>
+              <User className="h-5 w-5" strokeWidth={role === "student" ? 2.2 : 1.5} />
+              <span className="text-xs font-display font-medium">Aluno</span>
             </button>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-body text-muted-foreground mb-1.5 block">Nome completo</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="font-body font-light h-12" />
+              <label className="text-xs font-body font-medium text-muted-foreground mb-1.5 block">Nome completo</label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" className="font-body h-12 rounded-lg" />
             </div>
             <div>
-              <label className="text-xs font-body text-muted-foreground mb-1.5 block">Email</label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" className="font-body font-light h-12" />
+              <label className="text-xs font-body font-medium text-muted-foreground mb-1.5 block">Email</label>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" className="font-body h-12 rounded-lg" />
             </div>
             <div>
-              <label className="text-xs font-body text-muted-foreground mb-1.5 block">Senha</label>
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Mínimo 6 caracteres" className="font-body font-light h-12" />
+              <label className="text-xs font-body font-medium text-muted-foreground mb-1.5 block">Senha</label>
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Mínimo 6 caracteres" className="font-body h-12 rounded-lg" />
             </div>
           </div>
-          <Button type="submit" disabled={isLoading} className="w-full text-editorial-sm py-5 h-12">
+          <Button type="submit" disabled={isLoading} className="w-full h-12 text-base">
             {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Criando...
-              </>
+              <><Loader2 className="h-4 w-4 animate-spin mr-2" />Criando...</>
             ) : (
-              <>
-                Criar conta
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
+              <>Criar conta<ArrowRight className="ml-2 h-4 w-4" /></>
             )}
           </Button>
           <p className="text-center text-xs font-body text-muted-foreground">

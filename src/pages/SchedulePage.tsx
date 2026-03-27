@@ -43,16 +43,6 @@ const SchedulePage = () => {
     );
   };
 
-  const isSlotAvailable = (date: Date, hour: string) => {
-    if (isBefore(date, startOfDay(new Date())) && format(date, "yyyy-MM-dd") !== format(new Date(), "yyyy-MM-dd")) return false;
-    const existing = getSession(date, hour);
-    if (existing) {
-      // Students: hide other students' sessions
-      if (role === "student" && existing.student_id !== user?.id) return false;
-    }
-    return true;
-  };
-
   const handleSlotClick = (date: Date, hour: string) => {
     const existing = getSession(date, hour);
     if (existing) return;
@@ -86,10 +76,9 @@ const SchedulePage = () => {
     const session = getSession(day, hour);
     const isPast = isBefore(new Date(`${format(day, "yyyy-MM-dd")}T${hour}`), new Date());
 
-    // Students shouldn't see other students' sessions
     if (role === "student" && session && session.student_id !== user?.id) {
       return (
-        <div className="bg-muted/30 p-2 min-h-[56px] border border-border">
+        <div className="bg-muted/30 p-2 min-h-[56px] rounded-lg border border-border">
           <p className="text-[10px] text-muted-foreground font-body text-center leading-[40px]">—</p>
         </div>
       );
@@ -98,29 +87,29 @@ const SchedulePage = () => {
     return (
       <div
         onClick={() => !session && !isPast && handleSlotClick(day, hour)}
-        className={`p-2 min-h-[56px] transition-all duration-300 ${
+        className={`p-2 min-h-[56px] rounded-lg transition-all duration-200 ${
           session
             ? session.status === "pending"
-              ? "bg-warning/5 border border-warning/20"
+              ? "bg-warning/10 border border-warning/30"
               : session.status === "approved"
-              ? "bg-success/5 border border-success/20"
+              ? "bg-success/10 border border-success/30"
               : session.status === "completed"
-              ? "bg-success/5 border border-success/20"
-              : "bg-risk/5 border border-risk/20"
+              ? "bg-primary/10 border border-primary/30"
+              : "bg-risk/10 border border-risk/30"
             : isPast
-            ? "bg-muted/20 border border-border opacity-50"
-            : "border border-dashed border-border hover:border-foreground/30 cursor-pointer active:bg-accent/50"
+            ? "bg-muted/20 border border-transparent opacity-40"
+            : "border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 cursor-pointer active:bg-primary/10"
         }`}
       >
         {session ? (
           <div>
-            <p className="text-[10px] font-body truncate">
+            <p className="text-[10px] font-body truncate font-medium">
               {(session.student as any)?.full_name || (session.trainer as any)?.full_name || "—"}
             </p>
-            <span className={`text-[8px] font-display uppercase tracking-wider ${
+            <span className={`text-[8px] font-display uppercase tracking-wider font-semibold ${
               session.status === "pending" ? "text-warning" :
               session.status === "approved" ? "text-success" :
-              session.status === "completed" ? "text-success" : "text-risk"
+              session.status === "completed" ? "text-primary" : "text-risk"
             }`}>
               {session.status === "pending" ? "Pendente" :
                session.status === "approved" ? "Aprovado" :
@@ -130,13 +119,13 @@ const SchedulePage = () => {
               <div className="flex gap-1 mt-1.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "approved", student_id: session.student_id }); }}
-                  className="text-[9px] text-success border border-success/30 px-2 py-1 hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px]"
+                  className="text-[9px] text-success bg-success/10 border border-success/30 px-2 py-1 rounded hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
                 >
                   ✓
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "rejected", student_id: session.student_id }); }}
-                  className="text-[9px] text-risk border border-risk/30 px-2 py-1 hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px]"
+                  className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 rounded hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
                 >
                   ✗
                 </button>
@@ -145,114 +134,103 @@ const SchedulePage = () => {
             {role === "student" && session.status === "pending" && (
               <button
                 onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "cancelled", student_id: session.student_id }); }}
-                className="text-[9px] text-risk border border-risk/30 px-2 py-1 mt-1.5 hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px]"
+                className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 mt-1.5 rounded hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] font-medium"
               >
                 Cancelar
               </button>
             )}
           </div>
         ) : isPast ? null : (
-          <p className="text-[10px] text-muted-foreground/50 font-body text-center leading-[40px]">+</p>
+          <p className="text-[10px] text-primary/40 font-body text-center leading-[40px]">+</p>
         )}
       </div>
     );
   };
+
+  const sessionTypes = ["Musculação", "Funcional", "Pilates"];
 
   return (
     <AppLayout>
       <div className="space-y-6">
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <p className="text-editorial-sm text-muted-foreground mb-2">AGENDA</p>
-            <h1 className="font-display font-light text-2xl md:text-3xl tracking-tight">
+            <p className="text-editorial-sm text-muted-foreground mb-1">AGENDA</p>
+            <h1 className="font-display font-semibold text-2xl md:text-3xl tracking-tight">
               {role === "student" ? "Agendar treino" : "Sua semana"}
             </h1>
             {role === "student" && !profile?.trainer_id && (
-              <p className="text-sm text-risk font-body mt-2">
-                Você precisa vincular-se a um personal primeiro. Vá em Configurações e use um código de convite.
+              <p className="text-sm text-risk font-body mt-2 bg-risk/10 px-3 py-2 rounded-lg border border-risk/20">
+                ⚠️ Vincule-se a um personal primeiro em Configurações usando um código de convite.
               </p>
             )}
           </div>
-          {/* Mobile view toggle */}
-          <div className="flex gap-[1px] bg-border lg:hidden">
-            <button
-              onClick={() => setViewMode("day")}
-              className={`px-3 py-2 text-editorial-sm text-[9px] transition-colors min-h-[44px] ${
-                viewMode === "day" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground"
-              }`}
-            >
-              Dia
-            </button>
-            <button
-              onClick={() => setViewMode("week")}
-              className={`px-3 py-2 text-editorial-sm text-[9px] transition-colors min-h-[44px] ${
-                viewMode === "week" ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground"
-              }`}
-            >
-              Semana
-            </button>
+          <div className="flex gap-1 bg-muted rounded-lg p-1 lg:hidden">
+            <button onClick={() => setViewMode("day")}
+              className={`px-3 py-2 text-xs font-display font-medium rounded-md transition-all min-h-[40px] ${
+                viewMode === "day" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+              }`}>Dia</button>
+            <button onClick={() => setViewMode("week")}
+              className={`px-3 py-2 text-xs font-display font-medium rounded-md transition-all min-h-[40px] ${
+                viewMode === "week" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+              }`}>Semana</button>
           </div>
         </motion.div>
 
         {/* Week nav */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1} className="flex items-center gap-3 flex-wrap">
-          <button onClick={() => setWeekOffset(weekOffset - 1)} className="p-2 hover:bg-accent rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+          <button onClick={() => setWeekOffset(weekOffset - 1)} className="p-2 hover:bg-accent rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
             <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
           </button>
-          <p className="font-display text-sm">
+          <p className="font-display font-medium text-sm">
             {format(weekStart, "dd/MM")} — {format(addDays(weekStart, 5), "dd/MM/yyyy")}
           </p>
-          <button onClick={() => setWeekOffset(weekOffset + 1)} className="p-2 hover:bg-accent rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+          <button onClick={() => setWeekOffset(weekOffset + 1)} className="p-2 hover:bg-accent rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
             <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
           </button>
           {weekOffset !== 0 && (
-            <button onClick={() => setWeekOffset(0)} className="text-editorial-sm text-muted-foreground hover:text-foreground min-h-[44px] px-3 flex items-center">
-              Hoje
-            </button>
+            <Button variant="ghost" size="sm" onClick={() => setWeekOffset(0)} className="text-primary font-medium">Hoje</Button>
           )}
         </motion.div>
 
         {/* Mobile day selector */}
         {viewMode === "day" && (
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1.5} className="flex gap-1 overflow-x-auto pb-2 lg:hidden -mx-4 px-4">
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1.5} className="flex gap-2 overflow-x-auto pb-2 lg:hidden -mx-4 px-4">
             {weekDays.map((day, i) => (
-              <button
-                key={day.toISOString()}
-                onClick={() => setSelectedDayIndex(i)}
-                className={`flex flex-col items-center py-2 px-3 rounded-sm min-w-[52px] min-h-[56px] transition-colors ${
-                  selectedDayIndex === i ? "bg-foreground text-primary-foreground" : "bg-accent/50 text-foreground"
-                }`}
-              >
-                <span className="text-[9px] font-display uppercase">{format(day, "EEE", { locale: ptBR })}</span>
-                <span className="font-display text-lg">{format(day, "dd")}</span>
+              <button key={day.toISOString()} onClick={() => setSelectedDayIndex(i)}
+                className={`flex flex-col items-center py-2 px-3 rounded-xl min-w-[52px] min-h-[56px] transition-all ${
+                  selectedDayIndex === i
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "bg-card border border-border text-foreground hover:border-primary/30"
+                }`}>
+                <span className="text-[9px] font-display uppercase font-medium">{format(day, "EEE", { locale: ptBR })}</span>
+                <span className="font-display text-lg font-bold">{format(day, "dd")}</span>
               </button>
             ))}
           </motion.div>
         )}
 
-        {/* Grid - Desktop always week, Mobile respects viewMode */}
+        {/* Grid */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}>
-          {/* Desktop week view */}
           <div className={`${viewMode === "day" ? "hidden lg:block" : ""} overflow-x-auto -mx-4 px-4`}>
             <div className="min-w-[600px]">
-              <div className="grid grid-cols-[50px_repeat(6,1fr)] gap-[1px] bg-border mb-[1px]">
-                <div className="bg-background" />
+              <div className="grid grid-cols-[50px_repeat(6,1fr)] gap-1 mb-1">
+                <div />
                 {weekDays.map((day) => (
-                  <div key={day.toISOString()} className="bg-background py-2 text-center">
-                    <p className="text-editorial-sm text-muted-foreground text-[9px]">
-                      {format(day, "EEE", { locale: ptBR }).toUpperCase()}
+                  <div key={day.toISOString()} className="py-2 text-center">
+                    <p className="text-[9px] font-display uppercase text-muted-foreground font-medium">
+                      {format(day, "EEE", { locale: ptBR })}
                     </p>
-                    <p className="font-display text-sm">{format(day, "dd")}</p>
+                    <p className="font-display text-sm font-bold">{format(day, "dd")}</p>
                   </div>
                 ))}
               </div>
               {hours.map((hour) => (
-                <div key={hour} className="grid grid-cols-[50px_repeat(6,1fr)] gap-[1px] bg-border mb-[1px]">
-                  <div className="bg-background py-2 px-1 flex items-center">
-                    <span className="font-display text-[10px] text-muted-foreground">{hour}</span>
+                <div key={hour} className="grid grid-cols-[50px_repeat(6,1fr)] gap-1 mb-1">
+                  <div className="py-2 px-1 flex items-center">
+                    <span className="font-display text-[10px] text-muted-foreground font-medium">{hour}</span>
                   </div>
                   {weekDays.map((day) => (
-                    <div key={day.toISOString() + hour} className="bg-background">
+                    <div key={day.toISOString() + hour}>
                       {renderSlot(day, hour)}
                     </div>
                   ))}
@@ -261,7 +239,6 @@ const SchedulePage = () => {
             </div>
           </div>
 
-          {/* Mobile day view */}
           {viewMode === "day" && (
             <div className="lg:hidden space-y-1">
               {hours.map((hour) => {
@@ -269,11 +246,9 @@ const SchedulePage = () => {
                 return (
                   <div key={hour} className="flex gap-2">
                     <div className="w-14 py-3 flex items-start justify-end pr-2 shrink-0">
-                      <span className="font-display text-xs text-muted-foreground">{hour}</span>
+                      <span className="font-display text-xs text-muted-foreground font-medium">{hour}</span>
                     </div>
-                    <div className="flex-1">
-                      {renderSlot(day, hour)}
-                    </div>
+                    <div className="flex-1">{renderSlot(day, hour)}</div>
                   </div>
                 );
               })}
@@ -284,12 +259,12 @@ const SchedulePage = () => {
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-[10px]">
           {[
-            { label: "Aprovado", cls: "bg-success/5 border-success/20" },
-            { label: "Pendente", cls: "bg-warning/5 border-warning/20" },
+            { label: "Aprovado", cls: "bg-success/10 border-success/30" },
+            { label: "Pendente", cls: "bg-warning/10 border-warning/30" },
             { label: "Disponível", cls: "border-dashed border-border" },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
-              <div className={`w-3 h-3 border ${item.cls}`} />
+              <div className={`w-3 h-3 rounded border ${item.cls}`} />
               <span className="font-body text-muted-foreground">{item.label}</span>
             </div>
           ))}
@@ -298,61 +273,49 @@ const SchedulePage = () => {
 
       {/* Modal */}
       {showModal && selectedSlot && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/10 backdrop-blur-sm" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowModal(false)}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-background border border-border p-6 w-full sm:max-w-md sm:rounded-sm rounded-t-lg safe-bottom"
+            className="bg-background border border-border p-6 w-full sm:max-w-md sm:rounded-xl rounded-t-2xl safe-bottom shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <p className="text-editorial-sm">NOVO AGENDAMENTO</p>
-              <button onClick={() => setShowModal(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <div>
+                <p className="text-editorial-sm text-primary text-xs">NOVO AGENDAMENTO</p>
+              </div>
+              <button onClick={() => setShowModal(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-lg">
                 <X className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
               </button>
             </div>
             <div className="space-y-5">
-              <div>
-                <label className="text-xs font-body text-muted-foreground mb-1.5 block">Data e horário</label>
-                <p className="font-display text-sm">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                <label className="text-[10px] font-display text-primary uppercase tracking-wider font-medium">Data e horário</label>
+                <p className="font-display font-semibold text-sm mt-0.5">
                   {format(parseISO(selectedSlot.date), "dd/MM/yyyy (EEEE)", { locale: ptBR })} às {selectedSlot.time}
                 </p>
               </div>
               <div>
-                <label className="text-xs font-body text-muted-foreground mb-1.5 block">Tipo de treino</label>
-                <div className="flex gap-[1px] bg-border">
-                  {["Musculação", "Funcional", "Pilates"].map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setSessionType(t)}
-                      className={`flex-1 py-3 text-editorial-sm text-[9px] transition-colors min-h-[44px] ${
-                        sessionType === t ? "bg-foreground text-primary-foreground" : "bg-background text-muted-foreground"
-                      }`}
-                    >
-                      {t}
-                    </button>
+                <label className="text-xs font-body font-medium text-muted-foreground mb-2 block">Tipo de treino</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {sessionTypes.map((t) => (
+                    <button key={t} onClick={() => setSessionType(t)}
+                      className={`py-3 text-xs font-display font-medium rounded-lg transition-all min-h-[44px] ${
+                        sessionType === t
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-muted text-muted-foreground hover:bg-accent"
+                      }`}>{t}</button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs font-body text-muted-foreground mb-1.5 block">Observação (opcional)</label>
-                <Input
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Alguma observação..."
-                  className="font-body font-light h-12"
-                />
+                <label className="text-xs font-body font-medium text-muted-foreground mb-1.5 block">Observação (opcional)</label>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Alguma observação..." className="font-body h-12 rounded-lg" />
               </div>
-              <Button
-                onClick={handleCreateSession}
-                disabled={createSession.isPending || (role === "student" && !profile?.trainer_id)}
-                className="w-full text-editorial-sm h-12"
-              >
+              <Button onClick={handleCreateSession} disabled={createSession.isPending || (role === "student" && !profile?.trainer_id)}
+                className="w-full h-12 text-base">
                 {createSession.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Enviando...
-                  </>
+                  <><Loader2 className="h-4 w-4 animate-spin mr-2" />Enviando...</>
                 ) : (
                   "Solicitar agendamento"
                 )}
