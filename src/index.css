@@ -54,6 +54,14 @@
     --sidebar-border: 168 30% 88%;
     --sidebar-ring: 168 80% 36%;
 
+    /* Student theme overrides */
+    --student-primary: 230 70% 55%;
+    --student-primary-foreground: 0 0% 100%;
+    --student-accent: 230 60% 94%;
+    --student-accent-foreground: 230 70% 30%;
+    --student-sidebar-bg: 230 40% 97%;
+    --student-sidebar-primary: 230 70% 55%;
+
     --font-display: 'Space Grotesk', sans-serif;
     --font-body: 'Inter', sans-serif;
 
