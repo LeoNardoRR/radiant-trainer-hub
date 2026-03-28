@@ -5,6 +5,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import OnboardingTour from "@/components/OnboardingTour";
 
 const trainerNav = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -41,7 +42,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className={`min-h-screen bg-background flex ${isStudent ? "theme-student" : ""}`}>
+    <div className={`min-h-screen min-h-[100dvh] bg-background flex ${isStudent ? "theme-student" : ""}`}>
+      <OnboardingTour />
+
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 border-r border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40">
         <div className="p-5 border-b border-sidebar-border">
@@ -81,7 +84,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           })}
         </nav>
         <div className="p-3 border-t border-sidebar-border space-y-2">
-          {/* Dark mode toggle */}
           <button onClick={toggleTheme} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors min-h-[44px]">
             {theme === "dark" ? <Sun className="h-[18px] w-[18px]" strokeWidth={1.5} /> : <Moon className="h-[18px] w-[18px]" strokeWidth={1.5} />}
             <span className="text-sm font-body">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>
@@ -103,9 +105,29 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
 
+      {/* Mobile Top Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
+        <div className="flex items-center justify-between px-4 h-14" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+          <div className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isStudent ? "bg-[hsl(var(--student-primary))]" : "bg-primary"}`}>
+              <span className="text-primary-foreground font-display text-xs font-bold">F</span>
+            </div>
+            <span className="text-editorial-sm tracking-[0.12em] text-foreground text-[10px]">APPFIT</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={toggleTheme} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            <button onClick={handleSignOut} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground">
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+      </header>
+
       {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border shadow-lg shadow-foreground/5">
-        <div className="flex items-center justify-around py-1" style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}>
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border">
+        <div className="flex items-center justify-around py-1" style={{ paddingBottom: "max(0.25rem, env(safe-area-inset-bottom))" }}>
           {navItems.slice(0, 5).map((item) => {
             const active = location.pathname === item.path;
             const showBadge = item.path === "/notifications" && unreadCount > 0;
@@ -113,14 +135,16 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 relative transition-colors min-h-[48px] min-w-[48px] justify-center rounded-lg ${
-                  active ? "text-primary" : "text-muted-foreground active:text-primary"
+                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 relative transition-colors min-h-[48px] min-w-[48px] justify-center rounded-xl active:scale-95 ${
+                  active ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                <item.icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.5} />
-                <span className={`text-[9px] font-body ${active ? "font-semibold" : ""}`}>{item.label}</span>
+                <div className={`p-1 rounded-xl transition-all ${active ? "bg-primary/10" : ""}`}>
+                  <item.icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.5} />
+                </div>
+                <span className={`text-[9px] font-body leading-none ${active ? "font-bold text-primary" : "font-medium"}`}>{item.label}</span>
                 {showBadge && (
-                  <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[8px] flex items-center justify-center font-display font-bold">
+                  <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[8px] flex items-center justify-center font-display font-bold ring-2 ring-background">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -131,7 +155,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </nav>
 
       {/* Main */}
-      <main className="flex-1 lg:ml-60 pb-24 lg:pb-0">
+      <main className="flex-1 lg:ml-60 pb-24 lg:pb-0 pt-14 lg:pt-0">
         <div className="p-4 md:p-8 lg:p-10 max-w-7xl mx-auto">{children}</div>
       </main>
     </div>
