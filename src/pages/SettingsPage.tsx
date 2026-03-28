@@ -20,6 +20,7 @@ const fadeUp = {
 
 const SettingsPage = () => {
   const { profile, user, role } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [specialty, setSpecialty] = useState("");

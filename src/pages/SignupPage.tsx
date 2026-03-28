@@ -93,20 +93,22 @@ const SignupPage = () => {
             <button type="button" onClick={() => setRole("trainer")}
               className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] ${
                 role === "trainer"
-                  ? "border-primary bg-primary/5 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                  ? "border-[hsl(168,80%,36%)] bg-[hsl(168,80%,36%,0.08)] text-[hsl(168,80%,36%)]"
+                  : "border-border bg-card text-muted-foreground hover:border-[hsl(168,80%,36%,0.3)]"
               }`}>
               <Dumbbell className="h-5 w-5" strokeWidth={role === "trainer" ? 2.2 : 1.5} />
               <span className="text-xs font-display font-medium">Personal Trainer</span>
+              <span className="text-[10px] text-muted-foreground">Gerencie alunos</span>
             </button>
             <button type="button" onClick={() => setRole("student")}
               className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] ${
                 role === "student"
-                  ? "border-primary bg-primary/5 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                  ? "border-[hsl(230,70%,55%)] bg-[hsl(230,70%,55%,0.08)] text-[hsl(230,70%,55%)]"
+                  : "border-border bg-card text-muted-foreground hover:border-[hsl(230,70%,55%,0.3)]"
               }`}>
               <User className="h-5 w-5" strokeWidth={role === "student" ? 2.2 : 1.5} />
               <span className="text-xs font-display font-medium">Aluno</span>
+              <span className="text-[10px] text-muted-foreground">Agende sessões</span>
             </button>
           </div>
 
