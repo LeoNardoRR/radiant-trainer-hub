@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Copy, Loader2, Ticket, Link2 } from "lucide-react";
+import { Copy, Loader2, Ticket, Link2, Moon, Sun } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useInviteCodes, useCreateInviteCode, useRedeemInviteCode } from "@/hooks/useInviteCodes";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ const fadeUp = {
 
 const SettingsPage = () => {
   const { profile, user, role } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [specialty, setSpecialty] = useState("");
@@ -235,6 +237,27 @@ const SettingsPage = () => {
             </motion.div>
           </>
         )}
+
+        {/* Appearance */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3.5} className="card-editorial space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-primary" />
+            <p className="text-editorial-sm text-xs">APARÊNCIA</p>
+          </div>
+          <div className="flex items-center justify-between py-2 min-h-[48px]">
+            <div>
+              <span className="text-sm font-body font-medium">Modo escuro</span>
+              <p className="text-xs text-muted-foreground">Alterne entre tema claro e escuro</p>
+            </div>
+            <button onClick={toggleTheme}
+              className="w-14 h-8 rounded-full relative transition-colors duration-300 flex items-center px-1"
+              style={{ background: theme === "dark" ? "hsl(var(--primary))" : "hsl(var(--muted))" }}>
+              <div className={`w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-300 ${theme === "dark" ? "translate-x-6" : "translate-x-0"}`}>
+                {theme === "dark" ? <Moon className="h-3.5 w-3.5 text-primary" /> : <Sun className="h-3.5 w-3.5 text-warning" />}
+              </div>
+            </button>
+          </div>
+        </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4}>
           <Button onClick={handleSave} disabled={saving} className="h-12 w-full sm:w-auto px-8 text-base">

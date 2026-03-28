@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Calendar, Users, Bell, BarChart3, MessageSquare, Settings, LogOut,
+  LayoutDashboard, Calendar, Users, Bell, BarChart3, MessageSquare, Settings, LogOut, Moon, Sun,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
 
 const trainerNav = [
@@ -27,10 +28,12 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, role, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { data: notifications } = useNotifications();
 
   const navItems = role === "trainer" ? trainerNav : studentNav;
   const unreadCount = notifications?.filter((n) => !n.is_read).length || 0;
+  const isStudent = role === "student";
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,15 +41,18 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className={`min-h-screen bg-background flex ${isStudent ? "theme-student" : ""}`}>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 border-r border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40">
         <div className="p-5 border-b border-sidebar-border">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isStudent ? "bg-[hsl(var(--student-primary))]" : "bg-primary"}`}>
               <span className="text-primary-foreground font-display text-sm font-bold">F</span>
             </div>
             <span className="text-editorial-sm tracking-[0.15em] text-sidebar-foreground">APPFIT</span>
+            {isStudent && (
+              <span className="ml-auto text-[9px] font-display uppercase bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">Aluno</span>
+            )}
           </Link>
         </div>
         <nav className="flex-1 py-4 px-3 space-y-1">
@@ -74,9 +80,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border space-y-2">
+          {/* Dark mode toggle */}
+          <button onClick={toggleTheme} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors min-h-[44px]">
+            {theme === "dark" ? <Sun className="h-[18px] w-[18px]" strokeWidth={1.5} /> : <Moon className="h-[18px] w-[18px]" strokeWidth={1.5} />}
+            <span className="text-sm font-body">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>
+          </button>
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ring-2 ${isStudent ? "bg-[hsl(var(--student-primary)/0.1)] ring-[hsl(var(--student-primary)/0.2)]" : "bg-primary/10 ring-primary/20"}`}>
               <span className="text-sm font-display font-bold text-primary">
                 {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
               </span>
