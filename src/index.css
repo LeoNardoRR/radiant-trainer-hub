@@ -106,7 +106,29 @@
     --sidebar-accent-foreground: 168 60% 80%;
     --sidebar-border: 220 15% 18%;
     --sidebar-ring: 168 70% 45%;
+
+    --student-primary: 230 60% 60%;
+    --student-primary-foreground: 0 0% 100%;
+    --student-accent: 230 30% 15%;
+    --student-accent-foreground: 230 60% 80%;
+    --student-sidebar-bg: 230 20% 8%;
+    --student-sidebar-primary: 230 60% 60%;
   }
+}
+
+/* Role-based theme overrides */
+.theme-student {
+  --primary: var(--student-primary);
+  --primary-foreground: var(--student-primary-foreground);
+  --accent: var(--student-accent);
+  --accent-foreground: var(--student-accent-foreground);
+  --ring: var(--student-primary);
+  --sidebar-background: var(--student-sidebar-bg);
+  --sidebar-primary: var(--student-sidebar-primary);
+  --sidebar-primary-foreground: var(--student-primary-foreground);
+  --sidebar-accent: var(--student-accent);
+  --sidebar-accent-foreground: var(--student-accent-foreground);
+  --sidebar-ring: var(--student-primary);
 }
 
 @layer base {
