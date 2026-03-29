@@ -119,22 +119,38 @@ const SchedulePage = () => {
               <div className="flex gap-1 mt-1.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "approved", student_id: session.student_id }); }}
-                  className="text-[9px] text-success bg-success/10 border border-success/30 px-2 py-1 rounded hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
+                  className="text-[9px] text-success bg-success/10 border border-success/30 px-2 py-1 rounded-lg hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
                 >
                   ✓
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "rejected", student_id: session.student_id }); }}
-                  className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 rounded hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
+                  className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 rounded-lg hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
                 >
                   ✗
+                </button>
+              </div>
+            )}
+            {role === "trainer" && session.status === "approved" && isPast && (
+              <div className="flex gap-1 mt-1.5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "completed", student_id: session.student_id }); }}
+                  className="text-[9px] text-primary bg-primary/10 border border-primary/30 px-2 py-1 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors min-h-[28px] font-medium"
+                >
+                  ✓ Feito
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "missed", student_id: session.student_id }); }}
+                  className="text-[9px] text-warning bg-warning/10 border border-warning/30 px-2 py-1 rounded-lg hover:bg-warning hover:text-warning-foreground transition-colors min-h-[28px] font-medium"
+                >
+                  Falta
                 </button>
               </div>
             )}
             {role === "student" && session.status === "pending" && (
               <button
                 onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "cancelled", student_id: session.student_id }); }}
-                className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 mt-1.5 rounded hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] font-medium"
+                className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 mt-1.5 rounded-lg hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] font-medium"
               >
                 Cancelar
               </button>
