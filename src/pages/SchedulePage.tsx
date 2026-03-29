@@ -257,15 +257,16 @@ const SchedulePage = () => {
         </motion.div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-[10px]">
+        <div className="flex flex-wrap gap-4 text-[10px] bg-card border border-border rounded-2xl p-3 px-5">
           {[
-            { label: "Aprovado", cls: "bg-success/10 border-success/30" },
-            { label: "Pendente", cls: "bg-warning/10 border-warning/30" },
-            { label: "Disponível", cls: "border-dashed border-border" },
+            { label: "Aprovado", cls: "bg-success/10 border-success/30", dot: "bg-success" },
+            { label: "Pendente", cls: "bg-warning/10 border-warning/30", dot: "bg-warning" },
+            { label: "Concluído", cls: "bg-primary/10 border-primary/30", dot: "bg-primary" },
+            { label: "Disponível", cls: "border-dashed border-border", dot: "bg-muted-foreground" },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
-              <div className={`w-3 h-3 rounded border ${item.cls}`} />
-              <span className="font-body text-muted-foreground">{item.label}</span>
+              <div className={`w-2.5 h-2.5 rounded-full ${item.dot}`} />
+              <span className="font-body text-muted-foreground font-medium">{item.label}</span>
             </div>
           ))}
         </div>
