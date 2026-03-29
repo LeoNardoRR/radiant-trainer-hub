@@ -1,9 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 export const useMessages = (otherUserId?: string) => {
   const { user } = useAuth();
+  const qc = useQueryClient();
+
+  // Realtime subscription for messages
+  useEffect(() => {
+    if (!user || !otherUserId) return;
+
+    const channel = supabase
+      .channel(`messages-${otherUserId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages" },
+        (payload) => {
+          const msg = payload.new as any;
+          if (
+            msg &&
+            ((msg.sender_id === user.id && msg.receiver_id === otherUserId) ||
+              (msg.sender_id === otherUserId && msg.receiver_id === user.id))
+          ) {
+            qc.invalidateQueries({ queryKey: ["messages", user.id, otherUserId] });
+            qc.invalidateQueries({ queryKey: ["conversations"] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, otherUserId, qc]);
 
   return useQuery({
     queryKey: ["messages", user?.id, otherUserId],
@@ -17,15 +47,50 @@ export const useMessages = (otherUserId?: string) => {
         )
         .order("created_at", { ascending: true });
       if (error) throw error;
+
+      // Mark received messages as read
+      const unreadIds = data
+        ?.filter((m) => m.receiver_id === user!.id && !m.is_read)
+        .map((m) => m.id);
+      if (unreadIds && unreadIds.length > 0) {
+        await supabase
+          .from("messages")
+          .update({ is_read: true })
+          .in("id", unreadIds);
+      }
+
       return data;
     },
     enabled: !!user && !!otherUserId,
-    refetchInterval: 5000,
   });
 };
 
 export const useConversations = () => {
   const { user } = useAuth();
+  const qc = useQueryClient();
+
+  // Realtime for new conversations
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("conversations-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const msg = payload.new as any;
+          if (msg && (msg.sender_id === user.id || msg.receiver_id === user.id)) {
+            qc.invalidateQueries({ queryKey: ["conversations"] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, qc]);
 
   return useQuery({
     queryKey: ["conversations", user?.id],
@@ -37,14 +102,16 @@ export const useConversations = () => {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Collect all partner IDs
       const convMap = new Map<string, typeof data[0]>();
+      const unreadMap = new Map<string, number>();
       data?.forEach((msg) => {
         const partnerId = msg.sender_id === user!.id ? msg.receiver_id : msg.sender_id;
         if (!convMap.has(partnerId)) convMap.set(partnerId, msg);
+        if (msg.receiver_id === user!.id && !msg.is_read) {
+          unreadMap.set(partnerId, (unreadMap.get(partnerId) || 0) + 1);
+        }
       });
 
-      // Fetch partner profiles
       const partnerIds = Array.from(convMap.keys());
       if (partnerIds.length === 0) return [];
 
@@ -60,11 +127,11 @@ export const useConversations = () => {
         partnerName: profileMap.get(partnerId) || "Usuário",
         lastMessage: lastMsg.content,
         time: lastMsg.created_at,
-        unread: lastMsg.receiver_id === user!.id && !lastMsg.is_read,
+        unread: (unreadMap.get(partnerId) || 0) > 0,
+        unreadCount: unreadMap.get(partnerId) || 0,
       }));
     },
     enabled: !!user,
-    refetchInterval: 10000,
   });
 };
 
@@ -77,7 +144,7 @@ export const useSendMessage = () => {
       const { error } = await supabase.from("messages").insert({
         sender_id: user!.id,
         receiver_id: receiverId,
-        content,
+        content: content.trim(),
       });
       if (error) throw error;
     },

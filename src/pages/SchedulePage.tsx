@@ -119,22 +119,38 @@ const SchedulePage = () => {
               <div className="flex gap-1 mt-1.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "approved", student_id: session.student_id }); }}
-                  className="text-[9px] text-success bg-success/10 border border-success/30 px-2 py-1 rounded hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
+                  className="text-[9px] text-success bg-success/10 border border-success/30 px-2 py-1 rounded-lg hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
                 >
                   ✓
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "rejected", student_id: session.student_id }); }}
-                  className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 rounded hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
+                  className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 rounded-lg hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
                 >
                   ✗
+                </button>
+              </div>
+            )}
+            {role === "trainer" && session.status === "approved" && isPast && (
+              <div className="flex gap-1 mt-1.5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "completed", student_id: session.student_id }); }}
+                  className="text-[9px] text-primary bg-primary/10 border border-primary/30 px-2 py-1 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors min-h-[28px] font-medium"
+                >
+                  ✓ Feito
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "missed", student_id: session.student_id }); }}
+                  className="text-[9px] text-warning bg-warning/10 border border-warning/30 px-2 py-1 rounded-lg hover:bg-warning hover:text-warning-foreground transition-colors min-h-[28px] font-medium"
+                >
+                  Falta
                 </button>
               </div>
             )}
             {role === "student" && session.status === "pending" && (
               <button
                 onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "cancelled", student_id: session.student_id }); }}
-                className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 mt-1.5 rounded hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] font-medium"
+                className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 mt-1.5 rounded-lg hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] font-medium"
               >
                 Cancelar
               </button>
@@ -257,15 +273,16 @@ const SchedulePage = () => {
         </motion.div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-[10px]">
+        <div className="flex flex-wrap gap-4 text-[10px] bg-card border border-border rounded-2xl p-3 px-5">
           {[
-            { label: "Aprovado", cls: "bg-success/10 border-success/30" },
-            { label: "Pendente", cls: "bg-warning/10 border-warning/30" },
-            { label: "Disponível", cls: "border-dashed border-border" },
+            { label: "Aprovado", cls: "bg-success/10 border-success/30", dot: "bg-success" },
+            { label: "Pendente", cls: "bg-warning/10 border-warning/30", dot: "bg-warning" },
+            { label: "Concluído", cls: "bg-primary/10 border-primary/30", dot: "bg-primary" },
+            { label: "Disponível", cls: "border-dashed border-border", dot: "bg-muted-foreground" },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
-              <div className={`w-3 h-3 rounded border ${item.cls}`} />
-              <span className="font-body text-muted-foreground">{item.label}</span>
+              <div className={`w-2.5 h-2.5 rounded-full ${item.dot}`} />
+              <span className="font-body text-muted-foreground font-medium">{item.label}</span>
             </div>
           ))}
         </div>
@@ -277,7 +294,7 @@ const SchedulePage = () => {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-background border border-border p-6 w-full sm:max-w-md sm:rounded-xl rounded-t-2xl safe-bottom shadow-xl"
+            className="bg-background border border-border p-6 w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl safe-bottom shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
