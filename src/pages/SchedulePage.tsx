@@ -278,7 +278,7 @@ const SchedulePage = () => {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-background border border-border p-6 w-full sm:max-w-md sm:rounded-xl rounded-t-2xl safe-bottom shadow-xl"
+            className="bg-background border border-border p-6 w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl safe-bottom shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
