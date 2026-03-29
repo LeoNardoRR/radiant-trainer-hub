@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
+import { Calendar, TrendingUp, Users, XCircle, BarChart3 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { useSessions } from "@/hooks/useSessions";
 import { useStudents } from "@/hooks/useStudents";
+import StatCard from "@/components/StatCard";
+import EmptyState from "@/components/EmptyState";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -38,13 +41,21 @@ const AnalyticsPage = () => {
   const maxDay = Math.max(...dayCounts, 1);
 
   const metrics = [
-    { label: "Taxa de presença", value: `${presenceRate}%`, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Retenção", value: `${retentionRate}%`, color: "text-success", bg: "bg-success/10" },
-    { label: "Total de sessões", value: String(totalSessions), color: "text-foreground", bg: "bg-accent" },
-    { label: "Cancelamentos", value: String(cancelled), color: cancelled > 0 ? "text-risk" : "text-success", bg: cancelled > 0 ? "bg-risk/10" : "bg-success/10" },
+    { label: "Taxa de presença", value: `${presenceRate}%`, icon: TrendingUp, color: "text-success", bg: "bg-success/10" },
+    { label: "Retenção", value: `${retentionRate}%`, icon: Users, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Total de sessões", value: String(totalSessions), icon: Calendar, color: "text-foreground", bg: "bg-accent" },
+    { label: "Cancelamentos", value: String(cancelled), icon: XCircle, color: cancelled > 0 ? "text-risk" : "text-success", bg: cancelled > 0 ? "bg-risk/10" : "bg-success/10" },
   ];
 
-  const barColors = ["bg-primary/20", "bg-success/20", "bg-warning/20", "bg-primary/20", "bg-success/20", "bg-warning/20", "bg-primary/20"];
+  const barColors = [
+    "from-primary/30 to-primary/60",
+    "from-success/30 to-success/60",
+    "from-warning/30 to-warning/60",
+    "from-primary/30 to-primary/60",
+    "from-success/30 to-success/60",
+    "from-warning/30 to-warning/60",
+    "from-primary/30 to-primary/60",
+  ];
 
   return (
     <AppLayout>
@@ -57,67 +68,68 @@ const AnalyticsPage = () => {
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {metrics.map((m, i) => (
-            <motion.div key={m.label} initial="hidden" animate="visible" variants={fadeUp} custom={i + 1}
-              className="bg-card border border-border rounded-xl p-4 md:p-5">
-              <p className={`font-display font-bold text-2xl md:text-3xl mb-1 ${m.color}`}>{m.value}</p>
-              <p className="text-xs text-muted-foreground font-body">{m.label}</p>
-            </motion.div>
+            <StatCard key={m.label} {...m} index={i + 1} />
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-          {/* Sessions by day */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5} className="card-editorial">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <p className="text-editorial-sm text-xs">SESSÕES POR DIA</p>
-            </div>
-            {totalSessions === 0 ? (
-              <p className="text-sm text-muted-foreground font-body py-12 text-center">
-                Dados aparecerão conforme as sessões forem realizadas
-              </p>
-            ) : (
-              <div className="flex items-end gap-2 h-40">
+        {totalSessions === 0 ? (
+          <EmptyState icon={BarChart3} emoji="📊" title="Sem dados ainda"
+            description="Os gráficos e estatísticas aparecerão conforme as sessões forem realizadas." />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+            {/* Sessions by day */}
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5}
+              className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-colors">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                <p className="text-editorial-sm text-xs">SESSÕES POR DIA</p>
+              </div>
+              <div className="flex items-end gap-3 h-44">
                 {dayNames.map((name, i) => (
-                  <div key={name} className="flex-1 flex flex-col items-center gap-1">
+                  <div key={name} className="flex-1 flex flex-col items-center gap-2">
                     <div className="w-full relative flex-1 flex items-end">
-                      <div className={`w-full ${barColors[i]} rounded-t-md transition-all duration-500 min-h-[2px]`}
-                        style={{ height: `${(dayCounts[i] / maxDay) * 100}%` }} />
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${(dayCounts[i] / maxDay) * 100}%` }}
+                        transition={{ delay: 0.3 + i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className={`w-full bg-gradient-to-t ${barColors[i]} rounded-lg min-h-[4px]`}
+                      />
                     </div>
-                    <span className="text-[9px] font-display text-muted-foreground font-medium">{name}</span>
+                    <div className="text-center">
+                      <span className="text-[9px] font-display text-muted-foreground font-medium block">{name}</span>
+                      <span className="text-[10px] font-display font-bold text-foreground">{dayCounts[i]}</span>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-          </motion.div>
+            </motion.div>
 
-          {/* Popular hours */}
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={6} className="card-editorial">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-2 h-2 rounded-full bg-success" />
-              <p className="text-editorial-sm text-xs">HORÁRIOS POPULARES</p>
-            </div>
-            {popularHours.length === 0 ? (
-              <p className="text-sm text-muted-foreground font-body py-12 text-center">
-                Dados aparecerão conforme as sessões forem realizadas
-              </p>
-            ) : (
+            {/* Popular hours */}
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={6}
+              className="bg-card border border-border rounded-2xl p-5 hover:border-success/20 transition-colors">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-2 h-2 rounded-full bg-success" />
+                <p className="text-editorial-sm text-xs">HORÁRIOS POPULARES</p>
+              </div>
               <div className="space-y-3">
-                {popularHours.map((h) => (
+                {popularHours.map((h, i) => (
                   <div key={h.hour} className="flex items-center gap-3">
                     <span className="font-display text-xs w-12 shrink-0 text-muted-foreground font-medium">{h.hour}</span>
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${h.pct}%` }}
-                        transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                        className="h-full bg-gradient-to-r from-primary to-success rounded-full" />
+                    <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${h.pct}%` }}
+                        transition={{ delay: 0.5 + i * 0.05, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        className="h-full bg-gradient-to-r from-primary to-success rounded-full"
+                      />
                     </div>
                     <span className="text-[10px] font-display text-muted-foreground w-8 text-right font-medium">{h.pct}%</span>
                   </div>
                 ))}
               </div>
-            )}
-          </motion.div>
-        </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
