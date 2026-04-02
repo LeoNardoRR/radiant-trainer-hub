@@ -51,7 +51,7 @@ const SignupPage = () => {
             <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
               <span className="text-primary-foreground font-display text-lg font-bold">F</span>
             </div>
-            <span className="text-[15px] font-display font-semibold tracking-tight">FitFlow</span>
+            <span className="text-[15px] font-display font-semibold tracking-tight">FitApp</span>
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
             className="font-display font-bold text-4xl tracking-tight leading-[1.1] mb-3">
@@ -73,7 +73,7 @@ const SignupPage = () => {
             <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
               <span className="text-primary-foreground font-display text-sm font-bold">F</span>
             </div>
-            <span className="text-[13px] font-display font-semibold tracking-tight">FitFlow</span>
+            <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </div>
           <div>
             <h2 className="font-display font-bold text-2xl tracking-tight mb-1.5">Criar conta</h2>
@@ -83,7 +83,7 @@ const SignupPage = () => {
             </p>
           </div>
 
-          {/* iOS-style role selector */}
+          {/* Role selector */}
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => setRole("trainer")}
               className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all duration-200 min-h-[80px] ${

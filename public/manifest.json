@@ -1,11 +1,11 @@
 {
-  "name": "AppFit",
-  "short_name": "AppFit",
+  "name": "FitApp",
+  "short_name": "FitApp",
   "description": "Agendamento inteligente para Personal Trainers",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#f7f9fb",
-  "theme_color": "#0d9373",
+  "theme_color": "#007AFF",
   "orientation": "portrait",
   "icons": [
     {

@@ -20,8 +20,8 @@ const trainerNav = [
 const studentNav = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard" },
   { icon: Calendar, label: "Agendar", path: "/schedule" },
-  { icon: Bell, label: "Alertas", path: "/notifications" },
   { icon: MessageSquare, label: "Chat", path: "/messages" },
+  { icon: Bell, label: "Alertas", path: "/notifications" },
   { icon: Settings, label: "Ajustes", path: "/settings" },
 ];
 
@@ -45,7 +45,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     <div className={`min-h-screen min-h-[100dvh] bg-background flex ${isStudent ? "theme-student" : ""}`}>
       <OnboardingTour />
 
-      {/* Desktop Sidebar — iOS Settings style */}
+      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-[260px] border-r border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40">
         <div className="p-5 pb-4">
           <Link to="/dashboard" className="flex items-center gap-2.5">
@@ -53,7 +53,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="text-primary-foreground font-display text-sm font-bold">F</span>
             </div>
             <div>
-              <span className="text-[13px] font-display font-semibold text-sidebar-foreground tracking-tight">FitFlow</span>
+              <span className="text-[13px] font-display font-semibold text-sidebar-foreground tracking-tight">FitApp</span>
               {isStudent && (
                 <span className="ml-2 text-[9px] font-display bg-primary/12 text-primary px-1.5 py-0.5 rounded-full font-semibold">Aluno</span>
               )}
@@ -109,14 +109,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
 
-      {/* Mobile Top Header — iOS style frosted glass */}
+      {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-40 glass border-b border-border">
         <div className="flex items-center justify-between px-4 h-12" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <div className="flex items-center gap-2">
             <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${isStudent ? "bg-[hsl(var(--student-primary))]" : "bg-primary"}`}>
               <span className="text-primary-foreground font-display text-xs font-bold">F</span>
             </div>
-            <span className="text-[13px] font-display font-semibold text-foreground tracking-tight">FitFlow</span>
+            <span className="text-[13px] font-display font-semibold text-foreground tracking-tight">FitApp</span>
           </div>
           <div className="flex items-center gap-0">
             <button onClick={toggleTheme} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-muted-foreground">
@@ -129,7 +129,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      {/* Mobile Bottom Tab Bar — iOS style */}
+      {/* Mobile Bottom Tab Bar */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-border">
         <div className="flex items-center justify-around" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
           {navItems.slice(0, 5).map((item) => {
