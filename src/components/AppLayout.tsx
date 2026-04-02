@@ -43,6 +43,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className={`min-h-screen min-h-[100dvh] bg-background flex ${isStudent ? "theme-student" : ""}`}>
+      {/* Skip link for accessibility */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-4 focus:left-4 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-xl focus:font-medium">
+        Pular para o conteudo
+      </a>
       <OnboardingTour />
 
       {/* Desktop Sidebar */}
@@ -119,10 +123,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <span className="text-[13px] font-display font-semibold text-foreground tracking-tight">FitApp</span>
           </div>
           <div className="flex items-center gap-0">
-            <button onClick={toggleTheme} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-muted-foreground">
+            <button onClick={toggleTheme} aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-muted-foreground">
               {theme === "dark" ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
             </button>
-            <button onClick={handleSignOut} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-muted-foreground">
+            <button onClick={handleSignOut} aria-label="Sair da conta" className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-muted-foreground">
               <LogOut className="h-[18px] w-[18px]" strokeWidth={1.5} />
             </button>
           </div>
@@ -157,7 +161,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-[260px] pb-24 lg:pb-0 pt-12 lg:pt-0">
+      <main id="main-content" className="flex-1 lg:ml-[260px] pb-24 lg:pb-0 pt-12 lg:pt-0">
         <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
       </main>
     </div>

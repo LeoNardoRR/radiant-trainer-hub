@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Calendar, Users, Bell, BarChart3, MessageSquare, Settings,
-  ChevronRight, Sparkles, ArrowRight, Dumbbell, CheckCircle2,
+  Calendar, Users, Bell, MessageSquare, Settings,
+  ChevronRight, Sparkles, CheckCircle2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 

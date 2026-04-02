@@ -2,11 +2,26 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import type { Database, Tables } from "@/integrations/supabase/types";
+
+type SessionStatus = Database["public"]["Enums"]["session_status"];
+type BaseSession = Tables<"sessions">;
+
+interface SessionProfile {
+  user_id: string;
+  full_name: string;
+  email: string;
+}
+
+export interface SessionWithProfiles extends BaseSession {
+  student: SessionProfile | null;
+  trainer: SessionProfile | null;
+}
 
 export const useSessions = () => {
   const { user } = useAuth();
 
-  return useQuery({
+  return useQuery<SessionWithProfiles[]>({
     queryKey: ["sessions", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -106,7 +121,7 @@ export const useUpdateSessionStatus = () => {
       student_id,
     }: {
       id: string;
-      status: "approved" | "rejected" | "cancelled" | "completed" | "missed";
+      status: SessionStatus;
       student_id: string;
     }) => {
       const { error } = await supabase

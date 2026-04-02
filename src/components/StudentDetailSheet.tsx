@@ -39,8 +39,11 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="student-detail-title"
       >
-        <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={onClose} />
+        <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
         <motion.div
           initial={{ opacity: 0, y: 80 }}
           animate={{ opacity: 1, y: 0 }}
@@ -55,7 +58,7 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
               <span className="text-xl font-display font-bold">{student.full_name.charAt(0).toUpperCase()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="font-display font-bold text-lg truncate">{student.full_name}</h2>
+              <h2 id="student-detail-title" className="font-display font-bold text-lg truncate">{student.full_name}</h2>
               <p className="text-xs text-muted-foreground font-body truncate">{student.email}</p>
               {student.phone && (
                 <p className="text-xs text-muted-foreground font-body mt-0.5">{student.phone}</p>
@@ -64,7 +67,7 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
                 {sc.label}
               </span>
             </div>
-            <button onClick={onClose} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl transition-colors -mr-2 -mt-2">
+            <button onClick={onClose} aria-label="Fechar detalhes do aluno" className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl transition-colors -mr-2 -mt-2">
               <X className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
             </button>
           </div>

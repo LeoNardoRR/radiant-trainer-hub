@@ -126,7 +126,7 @@ const SchedulePage = () => {
         {session ? (
           <div>
             <p className="text-[11px] font-body truncate font-medium">
-              {(session.student as any)?.full_name || (session.trainer as any)?.full_name || "—"}
+              {session.student?.full_name || session.trainer?.full_name || "—"}
             </p>
             <span className={`text-[9px] font-display uppercase tracking-wider font-semibold ${statusColor(session.status)}`}>
               {statusLabel(session.status)}
@@ -305,7 +305,7 @@ const SchedulePage = () => {
 
       {/* Modal */}
       {showModal && selectedSlot && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowModal(false)} role="dialog" aria-modal="true" aria-labelledby="modal-title">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -313,7 +313,7 @@ const SchedulePage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <p className="text-editorial-sm text-primary text-xs">NOVO AGENDAMENTO</p>
+              <p id="modal-title" className="text-editorial-sm text-primary text-xs">NOVO AGENDAMENTO</p>
               <button onClick={() => setShowModal(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
                 <X className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
               </button>

@@ -55,6 +55,7 @@ export const useCreateInviteCode = () => {
 
 export const useRedeemInviteCode = () => {
   const { user } = useAuth();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (code: string) => {
@@ -91,7 +92,10 @@ export const useRedeemInviteCode = () => {
       return invite;
     },
     onSuccess: () => {
-      toast.success("Vinculado ao personal com sucesso!");
+      qc.invalidateQueries({ queryKey: ["sessions"] });
+      toast.success("Vinculado ao personal com sucesso! Recarregue a pagina para ver as alteracoes.");
+      // Reload to refresh auth context with new trainer_id
+      setTimeout(() => window.location.reload(), 1500);
     },
     onError: (e: Error) => toast.error(e.message),
   });

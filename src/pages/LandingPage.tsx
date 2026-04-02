@@ -33,12 +33,12 @@ const LandingPage = () => {
             </div>
             <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </Link>
-          <div className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6" aria-label="Navegacao principal">
             <a href="#features" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">Recursos</a>
             <a href="#pricing" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">Planos</a>
             <Link to="/login"><Button variant="ghost" size="sm">Entrar</Button></Link>
             <Link to="/signup"><Button size="sm">Criar conta</Button></Link>
-          </div>
+          </nav>
           <div className="flex items-center gap-2 md:hidden">
             <Link to="/login"><Button variant="ghost" size="sm">Entrar</Button></Link>
             <Link to="/signup"><Button size="sm">Criar conta</Button></Link>

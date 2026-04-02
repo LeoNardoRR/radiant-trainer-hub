@@ -124,7 +124,7 @@ const DashboardPage = () => {
                       </span>
                     </div>
                     <span className="font-body text-sm flex-1 truncate">
-                      {(session.student as any)?.full_name || (session.trainer as any)?.full_name || "—"}
+                      {session.student?.full_name || session.trainer?.full_name || "—"}
                     </span>
                     <span className={`status-badge ${
                       session.status === "approved" ? "status-approved" :
@@ -165,7 +165,7 @@ const DashboardPage = () => {
                     <div key={req.id} className="py-3 border-t border-border">
                       <div className="flex items-start justify-between mb-1">
                         <div className="min-w-0">
-                          <p className="font-body text-sm font-medium">{(req.student as any)?.full_name}</p>
+                          <p className="font-body text-sm font-medium">{req.student?.full_name}</p>
                           <p className="text-[11px] text-muted-foreground font-body">
                             {format(parseISO(req.date), "EEE, dd/MM", { locale: ptBR })} · {req.start_time?.slice(0, 5)}
                           </p>
