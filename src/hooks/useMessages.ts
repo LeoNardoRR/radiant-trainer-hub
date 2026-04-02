@@ -2,9 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
-import type { Tables } from "@/integrations/supabase/types";
-
-type Message = Tables<"messages">;
 
 export const useMessages = (otherUserId?: string) => {
   const { user } = useAuth();
@@ -20,7 +17,7 @@ export const useMessages = (otherUserId?: string) => {
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },
         (payload) => {
-          const msg = payload.new as Message;
+          const msg = payload.new as any;
           if (
             msg &&
             ((msg.sender_id === user.id && msg.receiver_id === otherUserId) ||
