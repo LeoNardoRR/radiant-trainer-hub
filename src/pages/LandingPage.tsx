@@ -24,14 +24,14 @@ const features = [
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav — frosted glass */}
+      {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
               <span className="text-primary-foreground font-display text-sm font-bold">F</span>
             </div>
-            <span className="text-[13px] font-display font-semibold tracking-tight">FitFlow</span>
+            <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">Recursos</a>
@@ -152,22 +152,23 @@ const LandingPage = () => {
       <section id="pricing" className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <h2 className="font-display font-bold text-3xl md:text-5xl tracking-tight">Planos simples</h2>
+            <h2 className="font-display font-bold text-3xl md:text-5xl tracking-tight">Planos acessíveis</h2>
+            <p className="text-muted-foreground mt-3 text-base">Ganhe por quantidade. Preço justo para todos.</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {
                 name: "Starter", price: "Grátis", period: "",
-                features: ["Até 5 alunos", "Agendamento básico", "Notificações padrão"],
+                features: ["Até 5 alunos", "Agendamento básico", "Notificações padrão", "Chat integrado"],
                 cta: "Começar grátis", highlighted: false
               },
               {
-                name: "Pro", price: "R$49", period: "/mês",
+                name: "Pro", price: "R$4,90", period: "/mês",
                 features: ["Alunos ilimitados", "Motor de retenção", "Analytics completo", "Suporte prioritário"],
-                cta: "Testar 7 dias", highlighted: true
+                cta: "Assinar agora", highlighted: true
               },
               {
-                name: "Business", price: "R$79", period: "/mês",
+                name: "Business", price: "R$7,90", period: "/mês",
                 features: ["Tudo do Pro", "Múltiplas unidades", "White-label", "Gerente dedicado"],
                 cta: "Falar com vendas", highlighted: false
               }
@@ -231,9 +232,9 @@ const LandingPage = () => {
             <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground text-[10px] font-bold">F</span>
             </div>
-            <span className="text-[13px] font-display font-semibold tracking-tight">FitFlow</span>
+            <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </div>
-          <p className="text-[12px] text-muted-foreground">© 2026 FitFlow. Todos os direitos reservados.</p>
+          <p className="text-[12px] text-muted-foreground">© 2026 FitApp. Todos os direitos reservados.</p>
           <div className="flex gap-6">
             <a href="#" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">Privacidade</a>
             <a href="#" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">Termos</a>

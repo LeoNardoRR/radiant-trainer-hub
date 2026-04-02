@@ -33,7 +33,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row">
-      {/* Left — clean gradient */}
+      {/* Left */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/6 via-primary/3 to-background items-center justify-center p-12">
         <div className="max-w-sm">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -41,7 +41,7 @@ const LoginPage = () => {
             <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
               <span className="text-primary-foreground font-display text-lg font-bold">F</span>
             </div>
-            <span className="text-[15px] font-display font-semibold tracking-tight">FitFlow</span>
+            <span className="text-[15px] font-display font-semibold tracking-tight">FitApp</span>
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
             className="font-display font-bold text-4xl tracking-tight leading-[1.1] mb-3">
@@ -55,7 +55,7 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right — form */}
+      {/* Right */}
       <div className="flex-1 flex items-center justify-center p-6 min-h-screen lg:min-h-0">
         <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           className="w-full max-w-sm space-y-7">
@@ -63,7 +63,7 @@ const LoginPage = () => {
             <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
               <span className="text-primary-foreground font-display text-sm font-bold">F</span>
             </div>
-            <span className="text-[13px] font-display font-semibold tracking-tight">FitFlow</span>
+            <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </div>
           <div>
             <h2 className="font-display font-bold text-2xl tracking-tight mb-1.5">Entrar</h2>

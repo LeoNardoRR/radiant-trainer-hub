@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Send, ArrowLeft, MessageSquare, Check, CheckCheck } from "lucide-react";
+import { Send, ArrowLeft, MessageSquare, Check, CheckCheck, Plus, Search } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
 import { useConversations, useMessages, useSendMessage } from "@/hooks/useMessages";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStudents } from "@/hooks/useStudents";
 import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import EmptyState from "@/components/EmptyState";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -24,19 +27,40 @@ const formatMsgDate = (dateStr: string) => {
   return format(d, "dd/MM/yyyy");
 };
 
+// Hook to get trainer profile for students
+const useTrainerProfile = () => {
+  const { user, role, profile } = useAuth();
+  return useQuery({
+    queryKey: ["trainer-profile", profile?.trainer_id],
+    queryFn: async () => {
+      if (!profile?.trainer_id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .eq("user_id", profile.trainer_id)
+        .single();
+      return data;
+    },
+    enabled: !!user && role === "student" && !!profile?.trainer_id,
+  });
+};
+
 const MessagesPage = () => {
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [selectedName, setSelectedName] = useState("");
   const [message, setMessage] = useState("");
   const [showConversations, setShowConversations] = useState(true);
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [searchContact, setSearchContact] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { data: conversations } = useConversations();
   const { data: messages } = useMessages(selectedPartner || undefined);
   const sendMessage = useSendMessage();
+  const { data: students } = useStudents();
+  const { data: trainerProfile } = useTrainerProfile();
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -45,6 +69,7 @@ const MessagesPage = () => {
     setSelectedPartner(partnerId);
     setSelectedName(name);
     setShowConversations(false);
+    setShowNewChat(false);
   };
 
   const handleSend = async () => {
@@ -53,6 +78,25 @@ const MessagesPage = () => {
     setMessage("");
     await sendMessage.mutateAsync({ receiverId: selectedPartner, content });
   };
+
+  // Build contacts list for new chat
+  const availableContacts = (() => {
+    if (role === "trainer") {
+      // Trainer can message any of their students
+      const existingPartnerIds = new Set(conversations?.map(c => c.partnerId) || []);
+      return (students || [])
+        .filter(s => !existingPartnerIds.has(s.user_id))
+        .filter(s => s.full_name.toLowerCase().includes(searchContact.toLowerCase()))
+        .map(s => ({ id: s.user_id, name: s.full_name, email: s.email }));
+    } else {
+      // Student can message their trainer
+      if (!trainerProfile) return [];
+      const existingPartnerIds = new Set(conversations?.map(c => c.partnerId) || []);
+      if (existingPartnerIds.has(trainerProfile.user_id)) return [];
+      if (searchContact && !trainerProfile.full_name.toLowerCase().includes(searchContact.toLowerCase())) return [];
+      return [{ id: trainerProfile.user_id, name: trainerProfile.full_name, email: trainerProfile.email }];
+    }
+  })();
 
   // Group messages by date
   const groupedMessages = messages?.reduce((acc, msg) => {
@@ -72,12 +116,65 @@ const MessagesPage = () => {
 
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
           className="border border-border rounded-2xl min-h-[60vh] md:min-h-[500px] flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0 overflow-hidden bg-card">
+          
           {/* Conversation list */}
           <div className={`border-r border-border overflow-y-auto ${
             !showConversations && selectedPartner ? "hidden md:block" : "block"
           }`}>
+            {/* New chat button */}
+            <div className="p-3 border-b border-border">
+              <button
+                onClick={() => setShowNewChat(!showNewChat)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/15 transition-colors min-h-[44px]"
+              >
+                <Plus className="h-4 w-4" />
+                Nova conversa
+              </button>
+            </div>
+
+            {/* New chat contact picker */}
+            {showNewChat && (
+              <div className="border-b border-border bg-muted/30">
+                <div className="p-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={searchContact}
+                      onChange={(e) => setSearchContact(e.target.value)}
+                      placeholder={role === "trainer" ? "Buscar aluno..." : "Buscar personal..."}
+                      className="pl-10 h-10 text-sm rounded-xl"
+                    />
+                  </div>
+                </div>
+                {availableContacts.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-3 px-3">
+                    {role === "student" && !trainerProfile
+                      ? "Vincule-se a um personal em Configurações primeiro."
+                      : "Nenhum contato disponível"}
+                  </p>
+                ) : (
+                  availableContacts.map((contact) => (
+                    <button
+                      key={contact.id}
+                      onClick={() => handleSelectConversation(contact.id, contact.name)}
+                      className="w-full text-left p-3 px-4 hover:bg-accent/50 transition-colors flex items-center gap-3 min-h-[52px]"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                        <span className="text-sm font-display font-bold text-success">{contact.name.charAt(0)}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{contact.name}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{contact.email}</p>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Existing conversations */}
             {!conversations || conversations.length === 0 ? (
-              <EmptyState icon={MessageSquare} emoji="💬" title="Nenhuma conversa" description="As conversas aparecerão quando você ou alguém enviar a primeira mensagem." />
+              <EmptyState icon={MessageSquare} emoji="💬" title="Nenhuma conversa" description="Toque em 'Nova conversa' para começar." />
             ) : (
               conversations.map((conv) => (
                 <button key={conv.partnerId} onClick={() => handleSelectConversation(conv.partnerId, conv.partnerName)}
@@ -189,7 +286,7 @@ const MessagesPage = () => {
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center">
-                <EmptyState icon={MessageSquare} emoji="💬" title="Selecione uma conversa" description="Escolha um contato para começar." />
+                <EmptyState icon={MessageSquare} emoji="💬" title="Selecione uma conversa" description="Escolha um contato ou inicie uma nova conversa." />
               </div>
             )}
           </div>
