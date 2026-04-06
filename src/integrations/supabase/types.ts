@@ -182,7 +182,9 @@ export type Database = {
           date: string
           end_time: string
           id: string
+          makeup_deadline: string | null
           notes: string | null
+          original_session_id: string | null
           session_type: string | null
           start_time: string
           status: Database["public"]["Enums"]["session_status"]
@@ -198,7 +200,9 @@ export type Database = {
           date: string
           end_time: string
           id?: string
+          makeup_deadline?: string | null
           notes?: string | null
+          original_session_id?: string | null
           session_type?: string | null
           start_time: string
           status?: Database["public"]["Enums"]["session_status"]
@@ -214,7 +218,9 @@ export type Database = {
           date?: string
           end_time?: string
           id?: string
+          makeup_deadline?: string | null
           notes?: string | null
+          original_session_id?: string | null
           session_type?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["session_status"]
@@ -233,6 +239,7 @@ export type Database = {
           cancel_limit_hours: number
           created_at: string
           id: string
+          makeup_days_limit: number
           max_sessions_per_day: number
           reminder_hours_before: number
           retention_alert_days_critical: number
@@ -247,6 +254,7 @@ export type Database = {
           cancel_limit_hours?: number
           created_at?: string
           id?: string
+          makeup_days_limit?: number
           max_sessions_per_day?: number
           reminder_hours_before?: number
           retention_alert_days_critical?: number
@@ -261,6 +269,7 @@ export type Database = {
           cancel_limit_hours?: number
           created_at?: string
           id?: string
+          makeup_days_limit?: number
           max_sessions_per_day?: number
           reminder_hours_before?: number
           retention_alert_days_critical?: number

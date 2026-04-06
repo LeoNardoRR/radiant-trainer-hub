@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Loader2, MessageCircle, RotateCcw, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSessions, useCreateSession, useUpdateSessionStatus } from "@/hooks/useSessions";
+import { useSessions, useCreateSession, useUpdateSessionStatus, useMakeupSessions } from "@/hooks/useSessions";
+import { useStudents } from "@/hooks/useStudents";
 import { format, addDays, startOfWeek, parseISO, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -19,18 +21,24 @@ const fadeUp = {
 };
 
 const hours = ["07:00", "08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+const sessionTypes = ["Musculação", "Funcional", "Pilates", "Cardio"];
 
 const SchedulePage = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [weekOffset, setWeekOffset] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
   const [sessionType, setSessionType] = useState("Musculação");
   const [notes, setNotes] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [selectedMakeupId, setSelectedMakeupId] = useState<string | null>(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState(new Date().getDay() === 0 ? 0 : new Date().getDay() - 1);
 
   const { user, role, profile } = useAuth();
   const { data: sessions } = useSessions();
+  const { data: students } = useStudents();
+  const { data: makeupSessions } = useMakeupSessions();
   const createSession = useCreateSession();
   const updateStatus = useUpdateSessionStatus();
 
@@ -44,30 +52,39 @@ const SchedulePage = () => {
     );
   };
 
+  // Only trainers can click on slots to create sessions
   const handleSlotClick = (date: Date, hour: string) => {
+    if (role !== "trainer") return;
     const existing = getSession(date, hour);
     if (existing) return;
     if (isBefore(new Date(`${format(date, "yyyy-MM-dd")}T${hour}`), new Date())) return;
     setSelectedSlot({ date: format(date, "yyyy-MM-dd"), time: hour });
+    setSelectedStudentId("");
+    setSelectedMakeupId(null);
     setShowModal(true);
   };
 
   const handleCreateSession = async () => {
-    if (!selectedSlot || !user) return;
+    if (!selectedSlot || !user || role !== "trainer") return;
+    if (!selectedStudentId) {
+      return;
+    }
     const endHour = String(Number(selectedSlot.time.split(":")[0]) + 1).padStart(2, "0") + ":00";
-    const trainerId = role === "trainer" ? user.id : profile?.trainer_id;
-    if (!trainerId) return;
     try {
       await createSession.mutateAsync({
-        trainer_id: trainerId,
+        student_id: selectedStudentId,
+        trainer_id: user.id,
         date: selectedSlot.date,
         start_time: selectedSlot.time,
         end_time: endHour,
         session_type: sessionType,
         notes: notes || undefined,
+        original_session_id: selectedMakeupId || undefined,
       });
       setShowModal(false);
       setNotes("");
+      setSelectedStudentId("");
+      setSelectedMakeupId(null);
     } catch {
       // error handled by hook
     }
@@ -98,10 +115,11 @@ const SchedulePage = () => {
     const session = getSession(day, hour);
     const isPast = isBefore(new Date(`${format(day, "yyyy-MM-dd")}T${hour}`), new Date());
 
+    // Students see other people's sessions as occupied
     if (role === "student" && session && session.student_id !== user?.id) {
       return (
         <div className="bg-muted/30 p-2 min-h-[56px] rounded-xl border border-border">
-          <p className="text-[10px] text-muted-foreground font-body text-center leading-[40px]">—</p>
+          <p className="text-[10px] text-muted-foreground font-body text-center leading-[40px]">Ocupado</p>
         </div>
       );
     }
@@ -120,13 +138,17 @@ const SchedulePage = () => {
               : "bg-risk/10 border border-risk/30"
             : isPast
             ? "bg-muted/20 border border-transparent opacity-40"
-            : "border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 cursor-pointer active:bg-primary/10"
+            : role === "trainer"
+            ? "border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 cursor-pointer active:bg-primary/10"
+            : "border border-dashed border-border/50 opacity-60"
         }`}
       >
         {session ? (
           <div>
             <p className="text-[11px] font-body truncate font-medium">
-              {(session.student as any)?.full_name || (session.trainer as any)?.full_name || "—"}
+              {role === "trainer"
+                ? (session.student as any)?.full_name || "—"
+                : (session.trainer as any)?.full_name || "—"}
             </p>
             <span className={`text-[9px] font-display uppercase tracking-wider font-semibold ${statusColor(session.status)}`}>
               {statusLabel(session.status)}
@@ -134,20 +156,24 @@ const SchedulePage = () => {
             {session.session_type && (
               <p className="text-[9px] text-muted-foreground mt-0.5">{session.session_type}</p>
             )}
+            {/* Makeup deadline indicator */}
+            {session.status === "missed" && (session as any).makeup_deadline && (
+              <p className="text-[9px] text-warning mt-0.5 flex items-center gap-0.5">
+                <RotateCcw className="h-2.5 w-2.5" />
+                Repor até {format(parseISO((session as any).makeup_deadline), "dd/MM")}
+              </p>
+            )}
+            {/* Trainer actions */}
             {role === "trainer" && session.status === "pending" && (
               <div className="flex gap-1 mt-1.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "approved", student_id: session.student_id }); }}
                   className="text-[9px] text-success bg-success/10 border border-success/30 px-2 py-1 rounded-lg hover:bg-success hover:text-success-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
-                >
-                  ✓
-                </button>
+                >✓</button>
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "rejected", student_id: session.student_id }); }}
                   className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 rounded-lg hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] min-w-[28px] font-medium"
-                >
-                  ✗
-                </button>
+                >✗</button>
               </div>
             )}
             {role === "trainer" && session.status === "approved" && isPast && (
@@ -155,34 +181,22 @@ const SchedulePage = () => {
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "completed", student_id: session.student_id }); }}
                   className="text-[9px] text-primary bg-primary/10 border border-primary/30 px-2 py-1 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors min-h-[28px] font-medium"
-                >
-                  ✓ Feito
-                </button>
+                >✓ Feito</button>
                 <button
                   onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "missed", student_id: session.student_id }); }}
                   className="text-[9px] text-warning bg-warning/10 border border-warning/30 px-2 py-1 rounded-lg hover:bg-warning hover:text-warning-foreground transition-colors min-h-[28px] font-medium"
-                >
-                  Falta
-                </button>
+                >Falta</button>
               </div>
-            )}
-            {role === "student" && session.status === "pending" && (
-              <button
-                onClick={(e) => { e.stopPropagation(); updateStatus.mutate({ id: session.id, status: "cancelled", student_id: session.student_id }); }}
-                className="text-[9px] text-risk bg-risk/10 border border-risk/30 px-2 py-1 mt-1.5 rounded-lg hover:bg-risk hover:text-risk-foreground transition-colors min-h-[28px] font-medium"
-              >
-                Cancelar
-              </button>
             )}
           </div>
         ) : isPast ? null : (
-          <p className="text-[10px] text-primary/40 font-body text-center leading-[40px]">+</p>
+          role === "trainer" ? (
+            <p className="text-[10px] text-primary/40 font-body text-center leading-[40px]">+</p>
+          ) : null
         )}
       </div>
     );
   };
-
-  const sessionTypes = ["Musculação", "Funcional", "Pilates", "Cardio"];
 
   return (
     <AppLayout>
@@ -191,7 +205,7 @@ const SchedulePage = () => {
           <div>
             <p className="text-editorial-sm text-muted-foreground mb-1">AGENDA</p>
             <h1 className="font-display font-semibold text-2xl md:text-3xl tracking-tight">
-              {role === "student" ? "Agendar treino" : "Sua semana"}
+              {role === "trainer" ? "Sua semana" : "Meus treinos"}
             </h1>
             {role === "student" && !profile?.trainer_id && (
               <p className="text-sm text-risk font-body mt-2 bg-risk/10 px-3 py-2 rounded-xl border border-risk/20">
@@ -200,6 +214,53 @@ const SchedulePage = () => {
             )}
           </div>
         </motion.div>
+
+        {/* Student: info banner about messaging trainer */}
+        {role === "student" && profile?.trainer_id && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0.5}>
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
+              <MessageCircle className="h-5 w-5 text-primary shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">A agenda é controlada pelo seu personal</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Para agendar, remarcar ou cancelar treinos, envie uma mensagem.
+                </p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => navigate("/messages")} className="shrink-0 rounded-xl">
+                Mensagem
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Student: makeup sessions available */}
+        {role === "student" && makeupSessions && makeupSessions.length > 0 && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0.7}>
+            <div className="bg-warning/5 border border-warning/20 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <RotateCcw className="h-4 w-4 text-warning" />
+                <p className="text-sm font-semibold text-warning">Reposições disponíveis</p>
+              </div>
+              <div className="space-y-2">
+                {makeupSessions.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between bg-background/60 rounded-xl px-3 py-2 border border-border/50">
+                    <div>
+                      <p className="text-xs font-medium">
+                        {s.session_type || "Treino"} — {format(parseISO(s.date), "dd/MM")}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Repor até {format(parseISO((s as any).makeup_deadline), "dd/MM/yyyy")}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/messages")} className="text-xs rounded-xl h-8">
+                      Pedir reposição
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Week nav */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1} className="flex items-center gap-2 flex-wrap">
@@ -293,7 +354,8 @@ const SchedulePage = () => {
             { label: "Aprovado", dot: "bg-success" },
             { label: "Pendente", dot: "bg-warning" },
             { label: "Concluído", dot: "bg-primary" },
-            { label: "Disponível", dot: "bg-muted-foreground" },
+            { label: "Falta / Reposição", dot: "bg-risk" },
+            ...(role === "trainer" ? [{ label: "Disponível", dot: "bg-muted-foreground" }] : []),
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
               <div className={`w-2.5 h-2.5 rounded-full ${item.dot}`} />
@@ -303,8 +365,8 @@ const SchedulePage = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && selectedSlot && (
+      {/* Trainer: Create Session Modal */}
+      {showModal && selectedSlot && role === "trainer" && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowModal(false)}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -313,7 +375,7 @@ const SchedulePage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <p className="text-editorial-sm text-primary text-xs">NOVO AGENDAMENTO</p>
+              <p className="text-editorial-sm text-primary text-xs">AGENDAR SESSÃO</p>
               <button onClick={() => setShowModal(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
                 <X className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
               </button>
@@ -325,6 +387,67 @@ const SchedulePage = () => {
                   {format(parseISO(selectedSlot.date), "dd/MM/yyyy (EEEE)", { locale: ptBR })} às {selectedSlot.time}
                 </p>
               </div>
+
+              {/* Student selector */}
+              <div>
+                <label className="text-xs font-body font-medium text-muted-foreground mb-2 block flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" /> Aluno
+                </label>
+                {students && students.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-1.5 max-h-[140px] overflow-y-auto">
+                    {students.map((s) => (
+                      <button
+                        key={s.user_id}
+                        onClick={() => setSelectedStudentId(s.user_id)}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-left transition-all text-sm ${
+                          selectedStudentId === s.user_id
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "bg-muted/50 text-foreground hover:bg-accent"
+                        }`}
+                      >
+                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold shrink-0">
+                          {s.full_name?.charAt(0)?.toUpperCase()}
+                        </div>
+                        <span className="truncate font-medium text-xs">{s.full_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl">Nenhum aluno vinculado.</p>
+                )}
+              </div>
+
+              {/* Makeup session selector (if student has pending makeups) */}
+              {selectedStudentId && (() => {
+                const studentMakeups = sessions?.filter(
+                  s => s.student_id === selectedStudentId && s.status === "missed" && (s as any).makeup_deadline && new Date((s as any).makeup_deadline) >= new Date()
+                );
+                if (!studentMakeups || studentMakeups.length === 0) return null;
+                return (
+                  <div>
+                    <label className="text-xs font-body font-medium text-muted-foreground mb-2 block flex items-center gap-1.5">
+                      <RotateCcw className="h-3.5 w-3.5" /> Reposição de falta (opcional)
+                    </label>
+                    <div className="space-y-1.5">
+                      {studentMakeups.map((ms) => (
+                        <button
+                          key={ms.id}
+                          onClick={() => setSelectedMakeupId(selectedMakeupId === ms.id ? null : ms.id)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-all ${
+                            selectedMakeupId === ms.id
+                              ? "bg-warning/15 border border-warning/30 text-warning"
+                              : "bg-muted/30 border border-border hover:bg-accent"
+                          }`}
+                        >
+                          <span>{ms.session_type || "Treino"} — Falta em {format(parseISO(ms.date), "dd/MM")}</span>
+                          <span className="text-[10px] text-muted-foreground">até {format(parseISO((ms as any).makeup_deadline), "dd/MM")}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div>
                 <label className="text-xs font-body font-medium text-muted-foreground mb-2 block">Tipo de treino</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -342,12 +465,12 @@ const SchedulePage = () => {
                 <label className="text-xs font-body font-medium text-muted-foreground mb-1.5 block">Observação (opcional)</label>
                 <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Alguma observação..." className="font-body h-12 rounded-xl" />
               </div>
-              <Button onClick={handleCreateSession} disabled={createSession.isPending || (role === "student" && !profile?.trainer_id)}
+              <Button onClick={handleCreateSession} disabled={createSession.isPending || !selectedStudentId}
                 className="w-full h-12 text-base rounded-xl">
                 {createSession.isPending ? (
-                  <><Loader2 className="h-4 w-4 animate-spin mr-2" />Enviando...</>
+                  <><Loader2 className="h-4 w-4 animate-spin mr-2" />Criando...</>
                 ) : (
-                  "Solicitar agendamento"
+                  selectedMakeupId ? "Agendar reposição" : "Agendar sessão"
                 )}
               </Button>
             </div>
