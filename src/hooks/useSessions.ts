@@ -16,7 +16,6 @@ export const useSessions = () => {
         .order("start_time", { ascending: true });
       if (error) throw error;
 
-      // Fetch profiles for all involved user IDs
       const userIds = new Set<string>();
       data?.forEach((s) => {
         userIds.add(s.student_id);
@@ -46,12 +45,14 @@ export const useCreateSession = () => {
 
   return useMutation({
     mutationFn: async (session: {
+      student_id: string;
       trainer_id: string;
       date: string;
       start_time: string;
       end_time: string;
       session_type?: string;
       notes?: string;
+      original_session_id?: string;
     }) => {
       // Check for double booking
       const { data: existing } = await supabase
@@ -74,15 +75,25 @@ export const useCreateSession = () => {
 
       const { data, error } = await supabase
         .from("sessions")
-        .insert({ ...session, student_id: user!.id })
+        .insert({
+          student_id: session.student_id,
+          trainer_id: session.trainer_id,
+          date: session.date,
+          start_time: session.start_time,
+          end_time: session.end_time,
+          session_type: session.session_type,
+          notes: session.notes,
+          original_session_id: session.original_session_id || null,
+        })
         .select()
         .single();
       if (error) throw error;
 
+      // Notify student about new session
       await supabase.from("notifications").insert({
-        user_id: session.trainer_id,
-        title: "Novo agendamento pendente",
-        message: `Novo pedido de sessão para ${session.date} às ${session.start_time}`,
+        user_id: session.student_id,
+        title: "Nova sessão agendada",
+        message: `Sessão marcada para ${session.date} às ${session.start_time}`,
         type: "scheduling",
       });
 
@@ -90,7 +101,7 @@ export const useCreateSession = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["sessions"] });
-      toast.success("Solicitação enviada!");
+      toast.success("Sessão criada com sucesso!");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -109,9 +120,33 @@ export const useUpdateSessionStatus = () => {
       status: "approved" | "rejected" | "cancelled" | "completed" | "missed";
       student_id: string;
     }) => {
+      const updateData: Record<string, unknown> = { status };
+
+      // When marking as missed, set makeup_deadline based on trainer settings
+      if (status === "missed") {
+        const { data: session } = await supabase
+          .from("sessions")
+          .select("trainer_id")
+          .eq("id", id)
+          .single();
+
+        if (session) {
+          const { data: settings } = await supabase
+            .from("trainer_settings")
+            .select("makeup_days_limit")
+            .eq("trainer_id", session.trainer_id)
+            .single();
+
+          const days = (settings as any)?.makeup_days_limit ?? 7;
+          const deadline = new Date();
+          deadline.setDate(deadline.getDate() + days);
+          updateData.makeup_deadline = deadline.toISOString().split("T")[0];
+        }
+      }
+
       const { error } = await supabase
         .from("sessions")
-        .update({ status })
+        .update(updateData)
         .eq("id", id);
       if (error) throw error;
 
@@ -120,7 +155,7 @@ export const useUpdateSessionStatus = () => {
         rejected: "Seu agendamento foi recusado.",
         cancelled: "Sessão cancelada.",
         completed: "Sessão concluída!",
-        missed: "Falta registrada.",
+        missed: `Falta registrada. Você tem dias para repor esta aula.`,
       };
 
       await supabase.from("notifications").insert({
@@ -130,6 +165,8 @@ export const useUpdateSessionStatus = () => {
             ? "Agendamento aprovado"
             : status === "rejected"
             ? "Agendamento recusado"
+            : status === "missed"
+            ? "Falta registrada — reposição disponível"
             : "Atualização de sessão",
         message: messages[status] || "Status atualizado.",
         type: "scheduling",
@@ -140,5 +177,27 @@ export const useUpdateSessionStatus = () => {
       toast.success("Status atualizado!");
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+};
+
+// Hook to get missed sessions with active makeup deadline for a student
+export const useMakeupSessions = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["makeup-sessions", user?.id],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("student_id", user!.id)
+        .eq("status", "missed")
+        .gte("makeup_deadline", today)
+        .order("makeup_deadline", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
   });
 };
