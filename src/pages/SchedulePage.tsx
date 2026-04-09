@@ -281,69 +281,99 @@ const SchedulePage = () => {
         {/* Mobile: day selector + day view */}
         {isMobile ? (
           <>
-            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1.5} className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1.5} className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4">
               {weekDays.map((day, i) => {
                 const daySessionCount = sessions?.filter(s => s.date === format(day, "yyyy-MM-dd")).length || 0;
+                const today = isToday(day);
                 return (
                   <button key={day.toISOString()} onClick={() => setSelectedDayIndex(i)}
-                    className={`flex flex-col items-center py-2 px-3 rounded-2xl min-w-[52px] min-h-[64px] transition-all relative ${
+                    className={`flex flex-col items-center py-2.5 px-3 rounded-2xl min-w-[56px] min-h-[72px] transition-all relative ${
                       selectedDayIndex === i
-                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                        : today
+                        ? "bg-primary/10 border-2 border-primary text-foreground"
                         : "bg-card border border-border text-foreground hover:border-primary/30"
                     }`}>
-                    <span className="text-[9px] font-display uppercase font-medium">{format(day, "EEE", { locale: ptBR })}</span>
-                    <span className="font-display text-lg font-bold">{format(day, "dd")}</span>
+                    <span className="text-[10px] font-display uppercase font-semibold tracking-wide">{format(day, "EEE", { locale: ptBR })}</span>
+                    <span className="font-display text-xl font-bold mt-0.5">{format(day, "dd")}</span>
                     {daySessionCount > 0 && (
-                      <span className={`w-1.5 h-1.5 rounded-full mt-0.5 ${selectedDayIndex === i ? "bg-primary-foreground/60" : "bg-primary"}`} />
+                      <div className="flex gap-0.5 mt-1">
+                        {Array.from({ length: Math.min(daySessionCount, 3) }).map((_, idx) => (
+                          <span key={idx} className={`w-1.5 h-1.5 rounded-full ${selectedDayIndex === i ? "bg-primary-foreground/70" : "bg-primary"}`} />
+                        ))}
+                      </div>
                     )}
                   </button>
                 );
               })}
             </motion.div>
 
-            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2} className="space-y-1.5">
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2} className="space-y-1">
               {hours.map((hour) => {
                 const day = weekDays[selectedDayIndex];
+                const session = getSession(day, hour);
                 return (
-                  <div key={hour} className="flex gap-2">
-                    <div className="w-14 py-3 flex items-start justify-end pr-2 shrink-0">
+                  <div key={hour} className="flex gap-0">
+                    <div className="w-16 py-3 flex items-start justify-end pr-3 shrink-0 border-r border-border/50">
                       <span className="font-display text-xs text-muted-foreground font-medium">{hour}</span>
                     </div>
-                    <div className="flex-1">{renderSlot(day, hour)}</div>
+                    <div className="flex-1 pl-3">{renderSlot(day, hour)}</div>
                   </div>
                 );
               })}
             </motion.div>
           </>
         ) : (
-          /* Desktop: week grid */
+          /* Desktop: Teams-style week grid */
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}>
-            <div className="overflow-x-auto">
-              <div className="min-w-[600px]">
-                <div className="grid grid-cols-[50px_repeat(6,1fr)] gap-1 mb-1">
-                  <div />
-                  {weekDays.map((day) => (
-                    <div key={day.toISOString()} className="py-2 text-center">
-                      <p className="text-[9px] font-display uppercase text-muted-foreground font-medium">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              {/* Day headers */}
+              <div className="grid grid-cols-[60px_repeat(6,1fr)] border-b border-border">
+                <div className="border-r border-border" />
+                {weekDays.map((day) => {
+                  const today = isToday(day);
+                  const daySessionCount = sessions?.filter(s => s.date === format(day, "yyyy-MM-dd")).length || 0;
+                  return (
+                    <div key={day.toISOString()} className={`py-3 text-center border-r border-border last:border-r-0 ${today ? "bg-primary/5" : ""}`}>
+                      <p className={`text-[10px] font-display uppercase tracking-widest font-semibold ${today ? "text-primary" : "text-muted-foreground"}`}>
                         {format(day, "EEE", { locale: ptBR })}
                       </p>
-                      <p className="font-display text-sm font-bold">{format(day, "dd")}</p>
+                      <div className="flex items-center justify-center mt-1">
+                        <span className={`font-display text-lg font-bold inline-flex items-center justify-center ${
+                          today
+                            ? "bg-primary text-primary-foreground w-8 h-8 rounded-full"
+                            : "text-foreground"
+                        }`}>
+                          {format(day, "dd")}
+                        </span>
+                      </div>
+                      {daySessionCount > 0 && (
+                        <div className="flex gap-0.5 justify-center mt-1.5">
+                          {Array.from({ length: Math.min(daySessionCount, 4) }).map((_, idx) => (
+                            <span key={idx} className={`w-1.5 h-1.5 rounded-full ${today ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-                {hours.map((hour) => (
-                  <div key={hour} className="grid grid-cols-[50px_repeat(6,1fr)] gap-1 mb-1">
-                    <div className="py-2 px-1 flex items-center">
-                      <span className="font-display text-[10px] text-muted-foreground font-medium">{hour}</span>
-                    </div>
-                    {weekDays.map((day) => (
-                      <div key={day.toISOString() + hour}>
+                  );
+                })}
+              </div>
+              {/* Time rows */}
+              {hours.map((hour, hourIdx) => (
+                <div key={hour} className={`grid grid-cols-[60px_repeat(6,1fr)] ${hourIdx < hours.length - 1 ? "border-b border-border/50" : ""}`}>
+                  <div className="py-2 px-2 flex items-start justify-end pr-3 border-r border-border">
+                    <span className="font-display text-[11px] text-muted-foreground font-medium mt-1">{hour}</span>
+                  </div>
+                  {weekDays.map((day) => {
+                    const today = isToday(day);
+                    return (
+                      <div key={day.toISOString() + hour} className={`p-0.5 border-r border-border/30 last:border-r-0 ${today ? "bg-primary/[0.02]" : ""}`}>
                         {renderSlot(day, hour)}
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
