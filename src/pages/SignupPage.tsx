@@ -12,8 +12,9 @@ const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const inviteFromUrl = searchParams.get("invite") || "";
   const [role, setRole] = useState<"trainer" | "student">(
-    searchParams.get("role") === "student" ? "student" : "trainer"
+    searchParams.get("role") === "student" || inviteFromUrl ? "student" : "trainer"
   );
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();

@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      badges: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          name: string
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
       invite_codes: {
         Row: {
           code: string
@@ -141,6 +174,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          invite_slug: string | null
           phone: string | null
           specialty: string | null
           status: Database["public"]["Enums"]["student_status"]
@@ -154,6 +188,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
+          invite_slug?: string | null
           phone?: string | null
           specialty?: string | null
           status?: Database["public"]["Enums"]["student_status"]
@@ -167,6 +202,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          invite_slug?: string | null
           phone?: string | null
           specialty?: string | null
           status?: Database["public"]["Enums"]["student_status"]
@@ -233,6 +269,42 @@ export type Database = {
         }
         Relationships: []
       }
+      student_fitness_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          notes: string | null
+          objective: string
+          trainer_id: string
+          training_location: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string
+          notes?: string | null
+          objective?: string
+          trainer_id: string
+          training_location?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          notes?: string | null
+          objective?: string
+          trainer_id?: string
+          training_location?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trainer_settings: {
         Row: {
           break_between: number
@@ -281,6 +353,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -295,6 +396,36 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_workout_date: string | null
+          longest_streak: number
+          total_workouts: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number
+          total_workouts?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number
+          total_workouts?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

@@ -150,12 +150,54 @@ export const useUpdateSessionStatus = () => {
         .eq("id", id);
       if (error) throw error;
 
+      // Update streak when completing
+      if (status === "completed") {
+        const { data: session } = await supabase
+          .from("sessions")
+          .select("student_id")
+          .eq("id", id)
+          .single();
+        if (session) {
+          const today = new Date().toISOString().split("T")[0];
+          const { data: existingStreak } = await supabase
+            .from("user_streaks")
+            .select("*")
+            .eq("user_id", session.student_id)
+            .maybeSingle();
+
+          if (!existingStreak) {
+            await supabase.from("user_streaks").insert({
+              user_id: session.student_id,
+              current_streak: 1,
+              longest_streak: 1,
+              total_workouts: 1,
+              last_workout_date: today,
+            });
+          } else {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split("T")[0];
+            let newStreak = existingStreak.last_workout_date === yesterdayStr
+              ? existingStreak.current_streak + 1
+              : existingStreak.last_workout_date === today
+              ? existingStreak.current_streak
+              : 1;
+            await supabase.from("user_streaks").update({
+              current_streak: newStreak,
+              longest_streak: Math.max(newStreak, existingStreak.longest_streak),
+              total_workouts: existingStreak.total_workouts + (existingStreak.last_workout_date === today ? 0 : 1),
+              last_workout_date: today,
+            }).eq("user_id", session.student_id);
+          }
+        }
+      }
+
       const messages: Record<string, string> = {
         approved: "Seu agendamento foi aprovado!",
         rejected: "Seu agendamento foi recusado.",
         cancelled: "Sessão cancelada.",
-        completed: "Sessão concluída!",
-        missed: `Falta registrada. Você tem dias para repor esta aula.`,
+        completed: "Sessão concluída! 🎉",
+        missed: "Falta registrada. Você tem dias para repor esta aula.",
       };
 
       await supabase.from("notifications").insert({
