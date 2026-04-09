@@ -139,7 +139,7 @@ const SchedulePage = () => {
             : isPast
             ? "bg-muted/20 border border-transparent opacity-40"
             : role === "trainer"
-            ? "border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 cursor-pointer active:bg-primary/10"
+            ? "border border-dashed border-primary/30 bg-primary/[0.06] hover:bg-primary/10 hover:border-primary/50 cursor-pointer active:bg-primary/15"
             : "border border-dashed border-border/50 opacity-60"
         }`}
       >
