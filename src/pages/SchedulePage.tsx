@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSessions, useCreateSession, useUpdateSessionStatus, useMakeupSessions } from "@/hooks/useSessions";
 import { useStudents } from "@/hooks/useStudents";
-import { format, addDays, startOfWeek, parseISO, isBefore } from "date-fns";
+import { format, addDays, startOfWeek, parseISO, isBefore, isToday, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
