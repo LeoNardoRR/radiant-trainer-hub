@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X, Loader2, MessageCircle, RotateCcw, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
