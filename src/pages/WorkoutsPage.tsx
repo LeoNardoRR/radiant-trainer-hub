@@ -251,11 +251,11 @@ const WorkoutsPage = () => {
               />
             </div>
 
-            {/* Muscle filter chips — horizontal scroll */}
-            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
+            {/* Muscle filter chips — flex wrap (sem corte) */}
+            <div className="flex flex-wrap gap-1.5">
               {["Todos", ...muscleGroups].map((m) => (
                 <button key={m} onClick={() => setFilterMuscle(m)}
-                  className={`px-3 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-all min-h-[36px] shrink-0 ${
+                  className={`px-3 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-all min-h-[36px] ${
                     filterMuscle === m
                       ? "bg-primary text-white"
                       : "bg-card border border-border text-muted-foreground hover:border-primary/30"

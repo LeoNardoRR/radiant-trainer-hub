@@ -124,7 +124,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const sidebarBdr = theme === "dark" ? "#15102a" : "#2d1a5c";
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background flex">
+    <div className="h-screen h-[100dvh] bg-background flex overflow-hidden">
       <OnboardingTour />
 
       {/* ═══ DESKTOP SIDEBAR ════════════════════════════════ */}
@@ -288,13 +288,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </nav>
 
-      {/* ═══ MAIN CONTENT ════════════════════════════════════ */}
-      <main className="flex-1 lg:ml-[230px]"
+      {/* ═══ MAIN CONTENT — scrolls independently ═══════════════ */}
+      <main
+        className="flex-1 lg:ml-[230px] overflow-y-auto"
         style={{
           paddingTop: "calc(56px + env(safe-area-inset-top))",
-          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 72px)`,
+          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 16px)`,
+          height: "100dvh",
         }}>
-        {/* Extra bottom pad for demo banner */}
         <div className="px-4 py-5 md:px-6 lg:p-8 max-w-5xl mx-auto lg:pt-8 lg:pb-8">
           {children}
         </div>
