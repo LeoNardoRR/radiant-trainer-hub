@@ -3,26 +3,37 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
+  const emailValid = emailRegex.test(email);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Preencha todos os campos");
+    setTouched({ email: true, password: true });
+    if (!emailValid) {
+      toast.error("Insira um email válido");
+      return;
+    }
+    if (!password) {
+      toast.error("Insira sua senha");
       return;
     }
     setIsLoading(true);
     try {
-      await signIn(email, password);
+      await signIn(email.trim().toLowerCase(), password);
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message === "Invalid login credentials" ? "Email ou senha incorretos" : err.message);
@@ -32,21 +43,20 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row">
       {/* Left */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/6 via-primary/3 to-background items-center justify-center p-12">
         <div className="max-w-sm">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="flex items-center gap-2.5 mb-10">
             <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-display text-lg font-bold">F</span>
+              <span className="text-primary-foreground font-bold text-lg">F</span>
             </div>
-            <span className="text-[15px] font-display font-semibold tracking-tight">FitApp</span>
+            <span className="text-[15px] font-semibold tracking-tight">FitApp</span>
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
-            className="font-display font-bold text-4xl tracking-tight leading-[1.1] mb-3">
-            Bem-vindo
-            <br />de volta.
+            className="font-bold text-4xl tracking-tight leading-[1.1] mb-3">
+            Bem-vindo<br />de volta.
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}
             className="text-muted-foreground text-[15px] leading-relaxed">
@@ -56,17 +66,17 @@ const LoginPage = () => {
       </div>
 
       {/* Right */}
-      <div className="flex-1 flex items-center justify-center p-6 min-h-screen lg:min-h-0">
+      <div className="flex-1 flex items-center justify-center p-6">
         <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="w-full max-w-sm space-y-7">
+          className="w-full max-w-sm space-y-7" noValidate>
           <div className="lg:hidden mb-2 flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-display text-sm font-bold">F</span>
+              <span className="text-primary-foreground font-bold text-sm">F</span>
             </div>
-            <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
+            <span className="text-[13px] font-semibold tracking-tight">FitApp</span>
           </div>
           <div>
-            <h2 className="font-display font-bold text-2xl tracking-tight mb-1.5">Entrar</h2>
+            <h2 className="font-bold text-2xl tracking-tight mb-1.5">Entrar</h2>
             <p className="text-[13px] text-muted-foreground">
               Não tem conta?{" "}
               <Link to="/signup" className="text-primary font-semibold hover:underline">Criar conta</Link>
@@ -75,11 +85,21 @@ const LoginPage = () => {
           <div className="space-y-3">
             <div>
               <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" className="h-12" />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouched(p => ({ ...p, email: true }))}
+                type="email" placeholder="seu@email.com"
+                className={`h-12 ${touched.email && email && !emailValid ? "border-risk focus-visible:ring-risk" : ""}`} />
+              {touched.email && email && !emailValid && <p className="text-[11px] text-risk mt-1">Insira um email válido.</p>}
             </div>
             <div>
               <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-12" />
+              <div className="relative">
+                <Input value={password} onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(p => ({ ...p, password: true }))}
+                  type={showPassword ? "text" : "password"} placeholder="••••••••" className="h-12 pr-12" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
           </div>
           <Button type="submit" disabled={isLoading} className="w-full h-12 text-[15px]">

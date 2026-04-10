@@ -19,7 +19,7 @@ const trainerNav = [
 
 const studentNav = [
   { icon: LayoutDashboard, label: "Início", path: "/dashboard" },
-  { icon: Calendar, label: "Agendar", path: "/schedule" },
+  { icon: Calendar, label: "Aulas", path: "/schedule" },
   { icon: MessageSquare, label: "Chat", path: "/messages" },
   { icon: Bell, label: "Alertas", path: "/notifications" },
   { icon: Settings, label: "Ajustes", path: "/settings" },
