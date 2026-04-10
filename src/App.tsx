@@ -11,6 +11,8 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import SchedulePage from "./pages/SchedulePage";
+import StudentClassesPage from "./pages/StudentClassesPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
 import StudentsPage from "./pages/StudentsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
