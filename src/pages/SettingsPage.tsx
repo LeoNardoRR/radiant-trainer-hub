@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Copy, Loader2, Ticket, Link2, Moon, Sun, Share2, ExternalLink } from "lucide-react";
+import { Copy, Loader2, Ticket, Link2, Moon, Sun, Share2, ExternalLink, Camera, QrCode } from "lucide-react";
+import QRCode from "react-qr-code";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -105,11 +106,74 @@ const SettingsPage = () => {
           <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Preferências</h1>
         </motion.div>
 
-        {/* Profile */}
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1} className="bg-card border border-border rounded-2xl p-5 space-y-4">
+        {/* ── Avatar / Photo ─── */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1} className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-primary" />
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">FOTO DE PERFIL</p>
+          </div>
+
+          {/* Photo section — always-visible, tap-friendly */}
+          <div className="flex items-center gap-4">
+            {/* Avatar preview with overlaid camera */}
+            <div className="relative shrink-0">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar"
+                  className="w-20 h-20 rounded-2xl object-cover ring-2 ring-border" />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-primary/15 flex items-center justify-center ring-2 ring-border">
+                  <span className="text-primary font-black text-2xl">
+                    {(profile?.full_name ?? "?").charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              {/* Camera badge — always visible, positioned bottom-right */}
+              <label htmlFor="avatar-upload"
+                className="absolute -bottom-1.5 -right-1.5 w-8 h-8 rounded-xl bg-primary flex items-center justify-center cursor-pointer shadow-lg hover:bg-primary/90 transition-colors press-scale">
+                <Camera className="h-4 w-4 text-white" />
+              </label>
+            </div>
+
+            {/* Copy / hint */}
+            <div className="flex-1">
+              <p className="text-sm font-semibold mb-0.5">{profile?.full_name ?? "—"}</p>
+              <p className="text-xs text-muted-foreground mb-3">{profile?.email ?? ""}</p>
+              {/* Explicit button */}
+              <label htmlFor="avatar-upload"
+                className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-primary/10 text-primary text-xs font-bold cursor-pointer hover:bg-primary/20 transition-colors press-scale">
+                <Camera className="h-3.5 w-3.5" />
+                Alterar foto
+              </label>
+            </div>
+          </div>
+
+          {/* Hidden file input */}
+          <input
+            id="avatar-upload"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file || !user) return;
+              const ext  = file.name.split(".").pop();
+              const path = `avatars/${user.id}-${Date.now()}.${ext}`;
+              const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+              if (error) { toast.error("Erro ao enviar foto"); return; }
+              const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+              await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("user_id", user.id);
+              toast.success("Foto de perfil atualizada!");
+              // force header to reload profile
+              window.location.reload();
+            }}
+          />
+        </motion.div>
+
+        {/* ── Profile fields ─── */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1.3} className="bg-card border border-border rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary" />
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">PERFIL</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">DADOS PESSOAIS</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -121,8 +185,8 @@ const SettingsPage = () => {
               <Input value={profile?.email || ""} disabled className="h-12 rounded-xl opacity-50" />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Telefone</label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="h-12 rounded-xl" />
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Telefone / WhatsApp</label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="h-12 rounded-xl" placeholder="(11) 99999-0000" />
             </div>
             {role === "trainer" && (
               <div>
@@ -174,6 +238,68 @@ const SettingsPage = () => {
                     )}
                   </div>
                 ))}
+
+                {/* QR Code — mostrado para o código ativo mais recente */}
+                {(() => {
+                  const activeCode = inviteCodes.find((ic) => !ic.is_used);
+                  if (!activeCode) return null;
+                  const inviteUrl = `${window.location.origin}/invite/${activeCode.code}`;
+                  return (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <p className="label-overline mb-3">QR Code de Convite</p>
+                      <div className="flex flex-col sm:flex-row items-center gap-4">
+                        {/* QR Code */}
+                        <div className="bg-white p-3 rounded-2xl shrink-0" id="invite-qr">
+                          <QRCode
+                            value={inviteUrl}
+                            size={140}
+                            style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                            viewBox="0 0 256 256"
+                          />
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 space-y-2 text-center sm:text-left">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            O aluno escaneia o QR com a câmera do celular e é direcionado direto para o cadastro — sem precisar digitar o código.
+                          </p>
+                          <p className="text-[11px] font-mono text-muted-foreground break-all">{inviteUrl}</p>
+                          <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+                            <button
+                              onClick={() => shareInviteLink(activeCode.code)}
+                              className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-primary text-white text-xs font-bold press-scale hover:bg-primary/90 transition-colors">
+                              <Share2 className="h-3.5 w-3.5" />
+                              Compartilhar link
+                            </button>
+                            <button
+                              onClick={() => {
+                                const svg = document.querySelector('#invite-qr svg') as SVGElement;
+                                if (!svg) return;
+                                const svgData = new XMLSerializer().serializeToString(svg);
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 300; canvas.height = 300;
+                                const img = new Image();
+                                img.onload = () => {
+                                  const ctx = canvas.getContext('2d')!;
+                                  ctx.fillStyle = 'white';
+                                  ctx.fillRect(0, 0, 300, 300);
+                                  ctx.drawImage(img, 0, 0, 300, 300);
+                                  const a = document.createElement('a');
+                                  a.download = `convite-${activeCode.code}.png`;
+                                  a.href = canvas.toDataURL('image/png');
+                                  a.click();
+                                };
+                                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                              }}
+                              className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-muted text-foreground text-xs font-bold press-scale hover:bg-muted/80 transition-colors">
+                              <QrCode className="h-3.5 w-3.5" />
+                              Baixar QR
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </motion.div>

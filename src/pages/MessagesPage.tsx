@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Send, ArrowLeft, MessageSquare, Check, CheckCheck, Plus, Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Send, ArrowLeft, MessageSquare, Check, CheckCheck, Plus, Search, Megaphone, X, Loader2, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useConversations, useMessages, useSendMessage } from "@/hooks/useMessages";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStudents } from "@/hooks/useStudents";
@@ -11,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import EmptyState from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -52,6 +54,10 @@ const MessagesPage = () => {
   const [showConversations, setShowConversations] = useState(true);
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchContact, setSearchContact] = useState("");
+  const [showBroadcast, setShowBroadcast] = useState(false);
+  const [broadcastMsg, setBroadcastMsg] = useState("");
+  const [broadcastFilter, setBroadcastFilter] = useState<"all" | "active" | "at_risk" | "inactive">("all");
+  const [broadcastSending, setBroadcastSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { user, role } = useAuth();
@@ -60,6 +66,32 @@ const MessagesPage = () => {
   const sendMessage = useSendMessage();
   const { data: students } = useStudents();
   const { data: trainerProfile } = useTrainerProfile();
+
+  const handleBroadcast = async () => {
+    if (!broadcastMsg.trim() || !students) return;
+    setBroadcastSending(true);
+    try {
+      const targets = students.filter((s) =>
+        broadcastFilter === "all" || s.status === broadcastFilter
+      );
+      await Promise.all(
+        targets.map((s) =>
+          supabase.from("messages").insert({
+            sender_id: user!.id,
+            receiver_id: s.user_id,
+            content: broadcastMsg,
+          })
+        )
+      );
+      toast.success(`Mensagem enviada para ${targets.length} aluno${targets.length !== 1 ? "s" : ""}!`);
+      setShowBroadcast(false);
+      setBroadcastMsg("");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBroadcastSending(false);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,9 +141,16 @@ const MessagesPage = () => {
   return (
     <AppLayout>
       <div className="space-y-4">
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-          <p className="text-editorial-sm text-muted-foreground mb-1">MENSAGENS</p>
-          <h1 className="font-display font-semibold text-2xl md:text-3xl tracking-tight">Comunicação</h1>
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-editorial-sm text-muted-foreground mb-1">MENSAGENS</p>
+            <h1 className="font-display font-semibold text-2xl md:text-3xl tracking-tight">Comunicação</h1>
+          </div>
+          {role === "trainer" && (
+            <Button onClick={() => setShowBroadcast(true)} variant="outline" className="gap-2 rounded-xl h-10 text-sm">
+              <Megaphone className="h-4 w-4" /> Mensagem em massa
+            </Button>
+          )}
         </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
@@ -292,6 +331,57 @@ const MessagesPage = () => {
           </div>
         </motion.div>
       </div>
+      {/* Broadcast modal */}
+      <AnimatePresence>
+        {showBroadcast && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowBroadcast(false)}>
+            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-primary" />
+                  <p className="font-bold text-base">Mensagem em Massa</p>
+                </div>
+                <button onClick={() => setShowBroadcast(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">Envie uma mensagem para um grupo de alunos de uma vez.</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" /> Destinatários
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { key: "all", label: `Todos (${students?.length || 0})` },
+                      { key: "active", label: `Ativos (${students?.filter((s) => s.status === "active").length || 0})` },
+                      { key: "at_risk", label: `Em risco (${students?.filter((s) => s.status === "at_risk").length || 0})` },
+                      { key: "inactive", label: `Inativos (${students?.filter((s) => s.status === "inactive").length || 0})` },
+                    ].map((f) => (
+                      <button key={f.key} onClick={() => setBroadcastFilter(f.key as any)}
+                        className={`px-3 py-2 rounded-xl text-xs font-medium transition-all min-h-[36px] ${broadcastFilter === f.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}>
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Mensagem</label>
+                  <textarea value={broadcastMsg} onChange={(e) => setBroadcastMsg(e.target.value)}
+                    placeholder="Digite o comunicado para seus alunos..." rows={4}
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                </div>
+                <Button onClick={handleBroadcast} disabled={!broadcastMsg.trim() || broadcastSending} className="w-full h-12 rounded-xl">
+                  {broadcastSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                  Enviar comunicado
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 };
