@@ -11,6 +11,7 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -85,11 +86,13 @@ function greeting(name?: string) {
 // ─── STUDENT DASHBOARD ───────────────────────────────────────
 const StudentDashboard = () => {
   const { profile, user } = useAuth();
-  const { data: sessions }   = useSessions();
-  const { data: streak }     = useUserStreak();
-  const { data: userBadges } = useUserBadges();
+  const { data: sessions, isLoading: sessLoading }    = useSessions();
+  const { data: streak,     isLoading: strkLoading }  = useUserStreak();
+  const { data: userBadges, isLoading: ubLoading }    = useUserBadges();
   const { data: allBadges }  = useBadges();
-  const { data: leaderboard } = useLeaderboard();
+  const { data: leaderboard, isLoading: lbLoading }   = useLeaderboard();
+
+  const isLoading = sessLoading || strkLoading || ubLoading || lbLoading;
 
   const today    = new Date();
   const todayStr = format(today, "yyyy-MM-dd");
@@ -123,6 +126,15 @@ const StudentDashboard = () => {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="rounded-2xl bg-primary/20 animate-pulse h-36" />
+          <div className="grid grid-cols-2 gap-3">
+            {[1,2].map(i=><div key={i} className="h-28 rounded-2xl bg-muted/60 animate-pulse" />)}
+          </div>
+          {[1,2,3].map(i=><div key={i} className="h-16 rounded-2xl bg-muted/40 animate-pulse" />)}
+        </div>
+      ) : (
       <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-4">
 
         {/* ── Hero ------------------------------------------------ */}
@@ -345,6 +357,7 @@ const StudentDashboard = () => {
           </motion.div>
         )}
       </motion.div>
+      )}
     </AppLayout>
   );
 };
@@ -352,10 +365,12 @@ const StudentDashboard = () => {
 // ─── TRAINER DASHBOARD ───────────────────────────────────────
 const TrainerDashboard = () => {
   const { profile } = useAuth();
-  const { data: sessions }      = useSessions();
-  const { data: students }      = useStudents();
-  const { data: notifications } = useNotifications();
-  const updateStatus            = useUpdateSessionStatus();
+  const { data: sessions,      isLoading: sessLoading }   = useSessions();
+  const { data: students,      isLoading: studLoading }   = useStudents();
+  const { data: notifications, isLoading: notifLoading }  = useNotifications();
+  const updateStatus = useUpdateSessionStatus();
+
+  const isLoading = sessLoading || studLoading || notifLoading;
 
   const today    = new Date();
   const todayStr = format(today, "yyyy-MM-dd");
@@ -379,6 +394,20 @@ const TrainerDashboard = () => {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <div className="space-y-5">
+          <div className="space-y-1">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-8 w-48" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[1,2,3,4].map(i=><div key={i} className="h-24 rounded-2xl bg-muted/60 animate-pulse" />)}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {[1,2,3].map(i=><div key={i} className="h-64 rounded-2xl bg-muted/40 animate-pulse" />)}
+          </div>
+        </div>
+      ) : (
       <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-5">
 
         {/* ── Greeting ---------------------------------------- */}
@@ -542,7 +571,7 @@ const TrainerDashboard = () => {
             </Link>
           ))}
         </motion.div>
-      </motion.div>
+      )}
     </AppLayout>
   );
 };

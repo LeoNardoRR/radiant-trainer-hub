@@ -136,6 +136,14 @@ const LoginPage = () => {
               {touched.password && !passwordValid && (
                 <p className="text-[11px] text-destructive mt-1">Mínimo {MIN_PASSWORD_LEN} caracteres.</p>
               )}
+              <div className="flex justify-end mt-1.5">
+                <Link
+                  to="/forgot-password"
+                  className="text-[11px] text-muted-foreground hover:text-primary transition-colors font-medium"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
             </div>
           </div>
 

@@ -10,9 +10,11 @@ import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OnboardingTour from "@/components/OnboardingTour";
+import ScrollToTop from "@/components/ScrollToTop";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import SchedulePage from "./pages/SchedulePage";
 import StudentClassesPage from "./pages/StudentClassesPage";
@@ -127,10 +129,11 @@ const AppRoutes = () => {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Public */}
-        <Route path="/"            element={<PageWrap><LandingPage /></PageWrap>} />
-        <Route path="/login"       element={<PageWrap><LoginPage /></PageWrap>} />
-        <Route path="/signup"      element={<PageWrap><SignupPage /></PageWrap>} />
-        <Route path="/invite/:code" element={<PageWrap><InvitePage /></PageWrap>} />
+        <Route path="/"                   element={<PageWrap><LandingPage /></PageWrap>} />
+        <Route path="/login"              element={<PageWrap><LoginPage /></PageWrap>} />
+        <Route path="/signup"             element={<PageWrap><SignupPage /></PageWrap>} />
+        <Route path="/forgot-password"    element={<PageWrap><ForgotPasswordPage /></PageWrap>} />
+        <Route path="/invite/:code"       element={<PageWrap><InvitePage /></PageWrap>} />
 
         {/* Protected */}
         <Route path="/dashboard"    element={<ProtectedRoute><PageWrap><DashboardPage /></PageWrap></ProtectedRoute>} />
@@ -159,6 +162,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <AuthProvider>
               <DemoModeProvider>
                 <ErrorBoundary>
