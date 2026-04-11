@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
@@ -15,7 +15,10 @@ const LoginPage = () => {
   const [showPassword, setShowPass]   = useState(false);
   const [touched, setTouched]         = useState({ email: false, password: false });
   const [isLoading, setIsLoading]     = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, loading } = useAuth();
+
+  // Já logado? Vai pro dashboard direto
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   const emailValid = emailRegex.test(email);
 

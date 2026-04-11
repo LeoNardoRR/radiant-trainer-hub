@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, Bell, Users, BarChart3, Shield, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -22,6 +23,11 @@ const features = [
 ];
 
 const LandingPage = () => {
+  const { user, loading } = useAuth();
+
+  // Se já estiver logado, vai direto pro dashboard — sem precisar logar de novo
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}

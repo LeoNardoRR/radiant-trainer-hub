@@ -58,6 +58,11 @@ const PageWrap = ({ children }: { children: React.ReactNode }) => (
 // ── Demo banner ───────────────────────────────────────────────
 const DemoBanner = () => {
   const { isDemo, enable, disable } = useDemoMode();
+  const { user } = useAuth();
+
+  // Só mostra o banner quando o usuário está logado
+  if (!user) return null;
+
   return (
     <motion.div
       initial={{ y: 80, opacity: 0 }}
@@ -82,8 +87,8 @@ const DemoBanner = () => {
       ) : (
         <button
           onClick={enable}
-          className="flex items-center gap-2 bg-foreground text-background px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold press-scale">
-          Ver dados de exemplo
+          className="flex items-center gap-1.5 bg-foreground/80 text-background px-3 py-2 rounded-xl shadow-xl text-[11px] font-bold press-scale opacity-60 hover:opacity-100 transition-opacity">
+          Ver demo
         </button>
       )}
     </motion.div>

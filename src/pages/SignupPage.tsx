@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Loader2, Dumbbell, User, Eye, EyeOff, Check, X } from "lucide-react";
@@ -27,8 +27,11 @@ const SignupPage = () => {
     searchParams.get("role") === "student" || inviteFromUrl ? "student" : "trainer"
   );
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Já logado? Vai pro dashboard direto
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   const emailValid = emailRegex.test(email);
   const passwordChecks = passwordRules.map((r) => ({ ...r, passed: r.test(password) }));
