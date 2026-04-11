@@ -104,11 +104,11 @@ const OnboardingTour = () => {
     if (!user || !role) return;
     const key = `${ONBOARDING_KEY}-${user.id}`;
     const completed = localStorage.getItem(key);
-    if (!completed) {
-      // Small delay for first load to feel natural
-      const t = setTimeout(() => setShow(true), 800);
-      return () => clearTimeout(t);
-    }
+    if (completed) return; // Already completed — never show again
+    // Mark as completed immediately to prevent re-showing
+    localStorage.setItem(key, "true");
+    const t = setTimeout(() => setShow(true), 800);
+    return () => clearTimeout(t);
   }, [user, role]);
 
   const steps = role === "trainer" ? trainerSteps : studentSteps;
