@@ -74,7 +74,7 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
   // Edit form state — initialised from student prop
   const [editName,   setEditName]   = useState(student?.full_name  ?? "");
   const [editPhone,  setEditPhone]  = useState(student?.phone      ?? "");
-  const [editStatus, setEditStatus] = useState(student?.status     ?? "active");
+  const [editStatus, setEditStatus] = useState<"active" | "at_risk" | "inactive">(student?.status ?? "active");
   const [saving,     setSaving]     = useState(false);
 
   if (!student) return null;
