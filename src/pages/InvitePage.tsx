@@ -27,9 +27,9 @@ const InvitePage = () => {
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center shadow-2xl mb-6"
+        className="w-20 h-20 rounded-3xl overflow-hidden shadow-2xl mb-6"
       >
-        <span className="text-primary-foreground font-black text-3xl">FT</span>
+        <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
       </motion.div>
 
       <motion.div
@@ -41,7 +41,7 @@ const InvitePage = () => {
           Você foi convidado!
         </h1>
         <p className="text-muted-foreground text-sm leading-relaxed max-w-[260px]">
-          Seu personal te convidou para o FitTracker. Criando sua conta em segundos…
+          Seu personal te convidou para o FitApp. Criando sua conta em segundos…
         </p>
       </motion.div>
 

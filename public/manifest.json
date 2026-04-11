@@ -1,6 +1,6 @@
 {
-  "name": "FitTracker — Personal Trainer App",
-  "short_name": "FitTracker",
+  "name": "FitApp — Personal Trainer App",
+  "short_name": "FitApp",
   "description": "Gerencie agenda, prescreva treinos e acompanhe resultados de alunos.",
   "start_url": "/dashboard",
   "display": "standalone",

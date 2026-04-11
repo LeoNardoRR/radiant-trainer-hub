@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OnboardingTour from "@/components/OnboardingTour";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -163,6 +164,7 @@ const App = () => (
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>
+                <OnboardingTour />
                 <DemoBanner />
               </DemoModeProvider>
             </AuthProvider>
@@ -174,4 +176,3 @@ const App = () => (
 );
 
 export default App;
-

@@ -125,7 +125,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="h-[100dvh] bg-background flex overflow-hidden">
-      <OnboardingTour />
 
       {/* ═══ DESKTOP SIDEBAR ════════════════════════════════ */}
       <aside
@@ -135,10 +134,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-5 py-5">
           <Link to="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-              <span className="text-white font-black text-[13px]">FT</span>
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: "linear-gradient(135deg, #7c3aed, #3b82f6)" }}>
+              <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
             </div>
-            <span className="text-white/90 font-bold text-[15px]">FitTracker</span>
+            <span className="text-white/90 font-bold text-[15px]">FitApp</span>
           </Link>
         </div>
 
@@ -202,7 +201,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <Avatar src={profile?.avatar_url} name={profile?.full_name} size={8} clickable onUpload={handleAvatarUpload} />
             <div>
               <p className="font-bold text-[13px] leading-none">
-                {profile?.full_name?.split(" ")[0] ?? "FitTracker"}
+                {profile?.full_name?.split(" ")[0] ?? "FitApp"}
               </p>
               <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{role}</p>
             </div>
