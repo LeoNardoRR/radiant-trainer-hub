@@ -18,20 +18,20 @@ export default defineConfig(({ mode }) => ({
   mode === "development" && componentTagger(),
   VitePWA({
     registerType: 'autoUpdate',
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/[a-z]+\.supabase\.co\/.*/i,
+          handler: 'NetworkFirst',
+          options: { cacheName: 'supabase-api', expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 } },
+        },
+      ],
+    },
     manifest: {
       name: 'FitApp — Personal Trainer App',
       short_name: 'FitApp',
       description: 'Gerencie agenda, treinos e resultados de alunos.',
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/[a-z]+\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'supabase-api', expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 } },
-          },
-        ],
-      },
       theme_color: '#7c3aed',
       background_color: '#0d0a1a',
       display: 'standalone',

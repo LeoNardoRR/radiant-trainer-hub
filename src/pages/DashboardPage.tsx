@@ -571,6 +571,7 @@ const TrainerDashboard = () => {
             </Link>
           ))}
         </motion.div>
+      </motion.div>
       )}
     </AppLayout>
   );
