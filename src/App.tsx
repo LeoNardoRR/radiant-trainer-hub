@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OnboardingTour from "@/components/OnboardingTour";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -143,6 +144,7 @@ const App = () => (
           <AuthProvider>
             <DemoModeProvider>
               <AppRoutes />
+              <OnboardingTour />
               <DemoBanner />
             </DemoModeProvider>
           </AuthProvider>

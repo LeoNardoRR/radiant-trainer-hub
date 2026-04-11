@@ -125,7 +125,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="h-screen h-[100dvh] bg-background flex overflow-hidden">
-      <OnboardingTour />
 
       {/* ═══ DESKTOP SIDEBAR ════════════════════════════════ */}
       <aside
