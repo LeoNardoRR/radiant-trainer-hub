@@ -10,9 +10,10 @@ import { toast } from "sonner";
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const passwordRules = [
-  { label: "Mínimo 6 caracteres", test: (p: string) => p.length >= 6 },
-  { label: "Pelo menos 1 número", test: (p: string) => /\d/.test(p) },
-  { label: "Pelo menos 1 letra maiúscula", test: (p: string) => /[A-Z]/.test(p) },
+  { label: "Mínimo 8 caracteres",             test: (p: string) => p.length >= 8 },
+  { label: "Pelo menos 1 número",             test: (p: string) => /\d/.test(p) },
+  { label: "Pelo menos 1 letra maiúscula",    test: (p: string) => /[A-Z]/.test(p) },
+  { label: "Pelo menos 1 caractere especial", test: (p: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(p) },
 ];
 
 const SignupPage = () => {
@@ -62,7 +63,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row">
+    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-y-auto">
       {/* Left */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/6 via-primary/3 to-background items-center justify-center p-12">
         <div className="max-w-sm">
@@ -85,7 +86,7 @@ const SignupPage = () => {
       </div>
 
       {/* Right */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 py-10">
         <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           className="w-full max-w-sm space-y-5" noValidate>
           <div className="lg:hidden mb-2 flex items-center gap-2">

@@ -154,7 +154,7 @@ const MessagesPage = () => {
         </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
-          className="border border-border rounded-2xl min-h-[60vh] md:min-h-[500px] flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0 overflow-hidden bg-card">
+          className="border border-border rounded-2xl h-[calc(100dvh-220px)] min-h-[360px] md:min-h-[500px] flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0 overflow-hidden bg-card">
           
           {/* Conversation list */}
           <div className={`border-r border-border overflow-y-auto ${

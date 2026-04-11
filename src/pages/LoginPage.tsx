@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const MIN_PASSWORD_LEN = 6;
 
 const LoginPage = () => {
   const [email, setEmail]             = useState("");
@@ -20,13 +21,14 @@ const LoginPage = () => {
   // Já logado? Vai pro dashboard direto
   if (!loading && user) return <Navigate to="/dashboard" replace />;
 
-  const emailValid = emailRegex.test(email);
+  const emailValid    = emailRegex.test(email);
+  const passwordValid = password.length >= MIN_PASSWORD_LEN;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({ email: true, password: true });
-    if (!emailValid)  { toast.error("Insira um email válido"); return; }
-    if (!password)    { toast.error("Insira sua senha"); return; }
+    if (!emailValid)     { toast.error("Insira um email válido"); return; }
+    if (!passwordValid)  { toast.error(`A senha deve ter pelo menos ${MIN_PASSWORD_LEN} caracteres`); return; }
 
     setIsLoading(true);
     try {
@@ -46,7 +48,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row">
+    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-y-auto">
       {/* Left panel — desktop só */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/8 via-primary/3 to-background items-center justify-center p-12">
         <div className="max-w-sm">
@@ -69,7 +71,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 py-10">
         <motion.form
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 16 }}
@@ -121,7 +123,7 @@ const LoginPage = () => {
                   onBlur={() => setTouched(p => ({ ...p, password: true }))}
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="h-12 pr-12"
+                  className={`h-12 pr-12 ${touched.password && !passwordValid ? "border-destructive focus-visible:ring-destructive" : ""}`}
                 />
                 <button
                   type="button"
@@ -131,6 +133,9 @@ const LoginPage = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              {touched.password && !passwordValid && (
+                <p className="text-[11px] text-destructive mt-1">Mínimo {MIN_PASSWORD_LEN} caracteres.</p>
+              )}
             </div>
           </div>
 

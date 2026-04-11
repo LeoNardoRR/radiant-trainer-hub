@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -30,8 +31,19 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 2, // 2 min
-      retry: 1,
+      staleTime:  1000 * 60 * 3,  // 3 min
+      gcTime:     1000 * 60 * 5,  // 5 min
+      retry: (failureCount, error: any) => {
+        // Don't retry on auth/permission errors
+        const status = error?.status ?? error?.code;
+        if (status === 401 || status === 403 || status === 404) return false;
+        return failureCount < 2;
+      },
+    },
+    mutations: {
+      onError: (error: any) => {
+        console.error("[Mutation error]", error);
+      },
     },
   },
 });
@@ -139,22 +151,27 @@ const AppRoutes = () => {
 
 // ── App root ───────────────────────────────────────────────────
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <DemoModeProvider>
-              <AppRoutes />
-              <DemoBanner />
-            </DemoModeProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <DemoModeProvider>
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
+                <DemoBanner />
+              </DemoModeProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
+

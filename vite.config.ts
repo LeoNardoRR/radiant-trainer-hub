@@ -19,26 +19,29 @@ export default defineConfig(({ mode }) => ({
   VitePWA({
     registerType: 'autoUpdate',
     manifest: {
-      name: 'FitApp',
-      short_name: 'FitApp',
-      description: 'App para gestão de treinos',
-      theme_color: '#000000',
-      background_color: '#ffffff',
+      name: 'FitTracker — Personal Trainer App',
+      short_name: 'FitTracker',
+      description: 'Gerencie agenda, treinos e resultados de alunos.',
+      theme_color: '#7c3aed',
+      background_color: '#0d0a1a',
       display: 'standalone',
-      start_url: '/',
+      start_url: '/dashboard',
+      lang: 'pt-BR',
       icons: [
         {
           src: '/icon-192.png',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable',
         },
         {
           src: '/icon-512.png',
           sizes: '512x512',
-          type: 'image/png'
-        }
-      ]
-    }
+          type: 'image/png',
+          purpose: 'any maskable',
+        },
+      ],
+    },
   })
 ].filter(Boolean),
   resolve: {
