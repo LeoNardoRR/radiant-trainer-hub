@@ -194,6 +194,95 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          sessions_per_month: number | null
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          sessions_per_month?: number | null
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          sessions_per_month?: number | null
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          plan_id: string | null
+          reference_month: string | null
+          status: string
+          student_id: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          plan_id?: string | null
+          reference_month?: string | null
+          status?: string
+          student_id: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          plan_id?: string | null
+          reference_month?: string | null
+          status?: string
+          student_id?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -331,6 +420,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      student_plan_assignments: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          plan_id: string
+          start_date: string
+          student_id: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          plan_id: string
+          start_date?: string
+          student_id: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          plan_id?: string
+          start_date?: string
+          student_id?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_plan_assignments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trainer_settings: {
         Row: {
