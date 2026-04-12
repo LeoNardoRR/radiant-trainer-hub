@@ -2,12 +2,15 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DollarSign, Plus, X, Loader2, CheckCircle2, Clock, AlertTriangle,
-  XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard,
+  XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard, UserPlus,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import PlanGate from "@/components/PlanGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   usePaymentPlans, useCreatePaymentPlan, useDeletePaymentPlan,
   usePayments, useCreatePayment, useUpdatePaymentStatus, useFinancialSummary, useStudentPayments,
@@ -30,10 +33,13 @@ const statusConfig = {
 };
 
 const PaymentsPage = () => {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const isTrainer = role === "trainer";
 
-  const [tab, setTab] = useState<"payments" | "plans">("payments");
+  const [tab, setTab] = useState<"payments" | "plans" | "assignments">("payments");
+  const [showAssign, setShowAssign] = useState(false);
+  const [assignStudent, setAssignStudent] = useState("");
+  const [assignPlan, setAssignPlan] = useState("");
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [showNewPlan, setShowNewPlan] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -60,6 +66,63 @@ const PaymentsPage = () => {
   const { data: payments, isLoading } = usePayments();
   const { data: myPayments } = useStudentPayments();
   const { data: summary } = useFinancialSummary();
+
+  const qc = useQueryClient();
+
+  // Student plan assignments
+  const { data: assignments } = useQuery({
+    queryKey: ["plan-assignments", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_plan_assignments" as any)
+        .select("*")
+        .eq("trainer_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      // Enrich with student + plan names
+      const rows = data as any[];
+      const studentIds = [...new Set(rows.map(r => r.student_id))];
+      const planIds = [...new Set(rows.map(r => r.plan_id))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", studentIds);
+      const { data: planData } = await supabase.from("payment_plans" as any).select("id, name, price").in("id", planIds);
+      const pMap = new Map((profiles || []).map(p => [p.user_id, p]));
+      const plMap = new Map(((planData as any[]) || []).map(p => [p.id, p]));
+      return rows.map(r => ({ ...r, student: pMap.get(r.student_id), plan: plMap.get(r.plan_id) }));
+    },
+    enabled: !!user && isTrainer,
+  });
+
+  const assignPlanMutation = useMutation({
+    mutationFn: async ({ student_id, plan_id }: { student_id: string; plan_id: string }) => {
+      const { error } = await supabase
+        .from("student_plan_assignments" as any)
+        .insert({ student_id, plan_id, trainer_id: user!.id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plan-assignments"] });
+      toast.success("Plano atribuído ao aluno!");
+      setShowAssign(false);
+      setAssignStudent("");
+      setAssignPlan("");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeAssignment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("student_plan_assignments" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plan-assignments"] });
+      toast.success("Atribuição removida.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const createPayment = useCreatePayment();
   const updateStatus = useUpdatePaymentStatus();
@@ -115,9 +178,13 @@ const PaymentsPage = () => {
             <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Gestão Financeira</h1>
           </div>
           {isTrainer && (
-            <Button onClick={() => tab === "payments" ? setShowNewPayment(true) : setShowNewPlan(true)} className="gap-2 rounded-xl h-11">
+            <Button onClick={() => {
+              if (tab === "payments") setShowNewPayment(true);
+              else if (tab === "plans") setShowNewPlan(true);
+              else setShowAssign(true);
+            }} className="gap-2 rounded-xl h-11">
               <Plus className="h-4 w-4" />
-              {tab === "payments" ? "Nova cobrança" : "Novo plano"}
+              {tab === "payments" ? "Nova cobrança" : tab === "plans" ? "Novo plano" : "Atribuir plano"}
             </Button>
           )}
         </motion.div>
@@ -150,9 +217,10 @@ const PaymentsPage = () => {
             {[
               { key: "payments", label: "Cobranças", icon: CreditCard },
               { key: "plans", label: "Planos", icon: Package },
+              { key: "assignments", label: "Alunos", icon: UserPlus },
             ].map(({ key, label, icon: Icon }) => (
               <button key={key} onClick={() => setTab(key as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === key ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:border-primary/30"}`}>
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${tab === key ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:border-primary/30"}`}>
                 <Icon className="h-4 w-4" /> {label}
               </button>
             ))}
@@ -286,6 +354,55 @@ const PaymentsPage = () => {
             )}
           </motion.div>
         )}
+
+        {/* ── TAB: Atribuições de Planos ────────────── */}
+        {isTrainer && tab === "assignments" && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="space-y-3">
+            {!assignments || assignments.length === 0 ? (
+              <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                <UserPlus className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+                <p className="font-semibold text-sm">Nenhum plano atribuído</p>
+                <p className="text-xs text-muted-foreground mt-1">Atribua planos aos seus alunos para facilitar cobranças.</p>
+                <Button onClick={() => setShowAssign(true)} className="mt-4 gap-2 rounded-xl">
+                  <Plus className="h-4 w-4" /> Atribuir plano
+                </Button>
+              </div>
+            ) : (
+              assignments.map((a: any, i: number) => (
+                <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                  className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 hover:border-primary/20 transition-colors">
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-black text-primary">
+                      {a.student?.full_name?.charAt(0)?.toUpperCase() || "?"}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{a.student?.full_name || "—"}</p>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">
+                        {a.plan?.name || "—"}
+                      </span>
+                      <span className="text-xs font-bold text-success">
+                        R$ {Number(a.plan?.price || 0).toFixed(2)}/mês
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Desde {new Date(a.start_date).toLocaleDateString("pt-BR")}
+                      {a.is_active
+                        ? <span className="text-success ml-1.5">· Ativo</span>
+                        : <span className="text-muted-foreground ml-1.5">· Inativo</span>
+                      }
+                    </p>
+                  </div>
+                  <button onClick={() => { if (confirm("Remover atribuição?")) removeAssignment.mutate(a.id); }}
+                    className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center hover:bg-risk/10 rounded-xl transition-colors shrink-0">
+                    <Trash2 className="h-4 w-4 text-risk" />
+                  </button>
+                </motion.div>
+              ))
+            )}
+          </motion.div>
+        )}
       </div>
 
       {/* ── Modal: Nova Cobrança ──────────────────── */}
@@ -384,6 +501,57 @@ const PaymentsPage = () => {
                   {createPlan.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Criar plano
                 </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Modal: Atribuir Plano a Aluno ────────── */}
+      <AnimatePresence>
+        {showAssign && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowAssign(false)}>
+            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}>
+              <div className="p-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="flex items-center justify-between mb-5">
+                  <p className="font-bold text-base">Atribuir Plano</p>
+                  <button onClick={() => setShowAssign(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Aluno</label>
+                    <select value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}
+                      className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Selecione um aluno...</option>
+                      {(students || []).map((s) => <option key={s.user_id} value={s.user_id}>{s.full_name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Plano</label>
+                    {!plans || plans.length === 0 ? (
+                      <p className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl">
+                        Nenhum plano criado. Crie um plano na aba "Planos" primeiro.
+                      </p>
+                    ) : (
+                      <select value={assignPlan} onChange={(e) => setAssignPlan(e.target.value)}
+                        className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Selecione um plano...</option>
+                        {plans.map((p: any) => <option key={p.id} value={p.id}>{p.name} — R$ {Number(p.price).toFixed(2)}/mês</option>)}
+                      </select>
+                    )}
+                  </div>
+                  <Button
+                    onClick={() => assignPlanMutation.mutate({ student_id: assignStudent, plan_id: assignPlan })}
+                    disabled={!assignStudent || !assignPlan || assignPlanMutation.isPending}
+                    className="w-full h-12 rounded-xl">
+                    {assignPlanMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Atribuir plano
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>
