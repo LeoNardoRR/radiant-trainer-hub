@@ -178,9 +178,13 @@ const PaymentsPage = () => {
             <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Gestão Financeira</h1>
           </div>
           {isTrainer && (
-            <Button onClick={() => tab === "payments" ? setShowNewPayment(true) : setShowNewPlan(true)} className="gap-2 rounded-xl h-11">
+            <Button onClick={() => {
+              if (tab === "payments") setShowNewPayment(true);
+              else if (tab === "plans") setShowNewPlan(true);
+              else setShowAssign(true);
+            }} className="gap-2 rounded-xl h-11">
               <Plus className="h-4 w-4" />
-              {tab === "payments" ? "Nova cobrança" : "Novo plano"}
+              {tab === "payments" ? "Nova cobrança" : tab === "plans" ? "Novo plano" : "Atribuir plano"}
             </Button>
           )}
         </motion.div>
