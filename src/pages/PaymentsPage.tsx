@@ -2,12 +2,15 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DollarSign, Plus, X, Loader2, CheckCircle2, Clock, AlertTriangle,
-  XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard,
+  XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard, UserPlus,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import PlanGate from "@/components/PlanGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   usePaymentPlans, useCreatePaymentPlan, useDeletePaymentPlan,
   usePayments, useCreatePayment, useUpdatePaymentStatus, useFinancialSummary, useStudentPayments,
