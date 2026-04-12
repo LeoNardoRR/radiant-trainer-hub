@@ -36,7 +36,10 @@ const PaymentsPage = () => {
   const { role } = useAuth();
   const isTrainer = role === "trainer";
 
-  const [tab, setTab] = useState<"payments" | "plans">("payments");
+  const [tab, setTab] = useState<"payments" | "plans" | "assignments">("payments");
+  const [showAssign, setShowAssign] = useState(false);
+  const [assignStudent, setAssignStudent] = useState("");
+  const [assignPlan, setAssignPlan] = useState("");
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [showNewPlan, setShowNewPlan] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
