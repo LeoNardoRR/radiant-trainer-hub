@@ -217,9 +217,10 @@ const PaymentsPage = () => {
             {[
               { key: "payments", label: "Cobranças", icon: CreditCard },
               { key: "plans", label: "Planos", icon: Package },
+              { key: "assignments", label: "Alunos", icon: UserPlus },
             ].map(({ key, label, icon: Icon }) => (
               <button key={key} onClick={() => setTab(key as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === key ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:border-primary/30"}`}>
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${tab === key ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:border-primary/30"}`}>
                 <Icon className="h-4 w-4" /> {label}
               </button>
             ))}
