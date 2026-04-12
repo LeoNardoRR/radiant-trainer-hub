@@ -67,6 +67,63 @@ const PaymentsPage = () => {
   const { data: myPayments } = useStudentPayments();
   const { data: summary } = useFinancialSummary();
 
+  const qc = useQueryClient();
+
+  // Student plan assignments
+  const { data: assignments } = useQuery({
+    queryKey: ["plan-assignments", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_plan_assignments" as any)
+        .select("*")
+        .eq("trainer_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      // Enrich with student + plan names
+      const rows = data as any[];
+      const studentIds = [...new Set(rows.map(r => r.student_id))];
+      const planIds = [...new Set(rows.map(r => r.plan_id))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", studentIds);
+      const { data: planData } = await supabase.from("payment_plans" as any).select("id, name, price").in("id", planIds);
+      const pMap = new Map((profiles || []).map(p => [p.user_id, p]));
+      const plMap = new Map(((planData as any[]) || []).map(p => [p.id, p]));
+      return rows.map(r => ({ ...r, student: pMap.get(r.student_id), plan: plMap.get(r.plan_id) }));
+    },
+    enabled: !!user && isTrainer,
+  });
+
+  const assignPlanMutation = useMutation({
+    mutationFn: async ({ student_id, plan_id }: { student_id: string; plan_id: string }) => {
+      const { error } = await supabase
+        .from("student_plan_assignments" as any)
+        .insert({ student_id, plan_id, trainer_id: user!.id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plan-assignments"] });
+      toast.success("Plano atribuído ao aluno!");
+      setShowAssign(false);
+      setAssignStudent("");
+      setAssignPlan("");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeAssignment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("student_plan_assignments" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plan-assignments"] });
+      toast.success("Atribuição removida.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const createPayment = useCreatePayment();
   const updateStatus = useUpdatePaymentStatus();
   const createPlan = useCreatePaymentPlan();
