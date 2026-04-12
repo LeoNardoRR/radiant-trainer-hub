@@ -33,7 +33,7 @@ const statusConfig = {
 };
 
 const PaymentsPage = () => {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const isTrainer = role === "trainer";
 
   const [tab, setTab] = useState<"payments" | "plans" | "assignments">("payments");
