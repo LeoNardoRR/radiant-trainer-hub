@@ -59,6 +59,7 @@ const MyWorkoutsPage = () => {
       {isOverdue ? (
         <PaymentRequiredWall feature="fichas de treino" />
       ) : (
+      <>
       <div className="space-y-6">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
@@ -271,6 +272,7 @@ const MyWorkoutsPage = () => {
           </div>
         )}
       </AnimatePresence>
+      </>
       )}
     </AppLayout>
   );
