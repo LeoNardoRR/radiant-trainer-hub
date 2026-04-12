@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { ArrowRight, CheckCheck, X, AlertTriangle, Trophy, Flame, Crown, Medal } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Link } from "react-router-dom";
@@ -408,7 +408,7 @@ const TrainerDashboard = () => {
           </div>
         </div>
       ) : (
-      <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-5">
+        <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-5">
 
         {/* ── Greeting ---------------------------------------- */}
         <motion.div variants={item}>
