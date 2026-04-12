@@ -506,6 +506,57 @@ const PaymentsPage = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ── Modal: Atribuir Plano a Aluno ────────── */}
+      <AnimatePresence>
+        {showAssign && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowAssign(false)}>
+            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}>
+              <div className="p-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="flex items-center justify-between mb-5">
+                  <p className="font-bold text-base">Atribuir Plano</p>
+                  <button onClick={() => setShowAssign(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Aluno</label>
+                    <select value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}
+                      className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Selecione um aluno...</option>
+                      {(students || []).map((s) => <option key={s.user_id} value={s.user_id}>{s.full_name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Plano</label>
+                    {!plans || plans.length === 0 ? (
+                      <p className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl">
+                        Nenhum plano criado. Crie um plano na aba "Planos" primeiro.
+                      </p>
+                    ) : (
+                      <select value={assignPlan} onChange={(e) => setAssignPlan(e.target.value)}
+                        className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Selecione um plano...</option>
+                        {plans.map((p: any) => <option key={p.id} value={p.id}>{p.name} — R$ {Number(p.price).toFixed(2)}/mês</option>)}
+                      </select>
+                    )}
+                  </div>
+                  <Button
+                    onClick={() => assignPlanMutation.mutate({ student_id: assignStudent, plan_id: assignPlan })}
+                    disabled={!assignStudent || !assignPlan || assignPlanMutation.isPending}
+                    className="w-full h-12 rounded-xl">
+                    {assignPlanMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Atribuir plano
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
         </PlanGate>
       ) : (
         /* Student — sees their own payment history (no gate needed) */
