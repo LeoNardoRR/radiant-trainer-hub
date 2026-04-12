@@ -292,7 +292,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         className="flex-1 lg:ml-[230px] overflow-y-auto"
         style={{
           paddingTop: "calc(56px + env(safe-area-inset-top))",
-          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 24px)`,
+          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 32px)`,
         }}>
         <div className="px-4 py-5 md:px-6 lg:p-8 max-w-5xl mx-auto lg:pt-8 lg:pb-8">
           {children}

@@ -154,8 +154,9 @@ const MessagesPage = () => {
         </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
-          className="border border-border rounded-2xl h-[calc(100dvh-220px)] min-h-[360px] md:min-h-[500px] flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0 overflow-hidden bg-card">
-          
+          className="border border-border rounded-2xl overflow-hidden bg-card flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0"
+          style={{ height: 'calc(100dvh - 56px - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 7rem)', minHeight: '360px', maxHeight: '680px' }}
+        >
           {/* Conversation list */}
           <div className={`border-r border-border overflow-y-auto ${
             !showConversations && selectedPartner ? "hidden md:block" : "block"
@@ -336,9 +337,10 @@ const MessagesPage = () => {
         {showBroadcast && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowBroadcast(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl"
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-2">
+              <div style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="flex items-center justify-between mb-2 px-6 pt-6">
                 <div className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-primary" />
                   <p className="font-bold text-base">Mensagem em Massa</p>
@@ -346,9 +348,9 @@ const MessagesPage = () => {
                 <button onClick={() => setShowBroadcast(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
                   <X className="h-4 w-4" />
                 </button>
-              </div>
-              <p className="text-sm text-muted-foreground mb-5">Envie uma mensagem para um grupo de alunos de uma vez.</p>
-              <div className="space-y-4">
+                </div>
+                <p className="text-sm text-muted-foreground mb-5 px-6">Envie uma mensagem para um grupo de alunos de uma vez.</p>
+                <div className="space-y-4 px-6">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-2 block flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5" /> Destinatários
@@ -377,6 +379,7 @@ const MessagesPage = () => {
                   {broadcastSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
                   Enviar comunicado
                 </Button>
+                </div>
               </div>
             </motion.div>
           </div>

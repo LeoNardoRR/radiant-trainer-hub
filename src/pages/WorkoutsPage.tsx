@@ -340,35 +340,37 @@ const WorkoutsPage = () => {
         {showNewPlan && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowNewPlan(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl"
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-5">
-                <p className="font-bold text-base">Nova Ficha de Treino</p>
-                <button onClick={() => setShowNewPlan(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Aluno</label>
-                  <select value={newPlanStudent} onChange={(e) => setNewPlanStudent(e.target.value)}
-                    className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="">Selecione um aluno...</option>
-                    {(students || []).map((s) => <option key={s.user_id} value={s.user_id}>{s.full_name}</option>)}
-                  </select>
+              <div className="p-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="flex items-center justify-between mb-5">
+                  <p className="font-bold text-base">Nova Ficha de Treino</p>
+                  <button onClick={() => setShowNewPlan(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Nome da ficha</label>
-                  <Input value={newPlanName} onChange={(e) => setNewPlanName(e.target.value)} placeholder="Ex: Treino A — Peito e Tríceps" className="h-12 rounded-xl" />
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Aluno</label>
+                    <select value={newPlanStudent} onChange={(e) => setNewPlanStudent(e.target.value)}
+                      className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Selecione um aluno...</option>
+                      {(students || []).map((s) => <option key={s.user_id} value={s.user_id}>{s.full_name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Nome da ficha</label>
+                    <Input value={newPlanName} onChange={(e) => setNewPlanName(e.target.value)} placeholder="Ex: Treino A — Peito e Tríceps" className="h-12 rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição (opcional)</label>
+                    <Input value={newPlanDesc} onChange={(e) => setNewPlanDesc(e.target.value)} placeholder="Observações gerais..." className="h-12 rounded-xl" />
+                  </div>
+                  <Button onClick={handleCreatePlan} disabled={!newPlanStudent || !newPlanName.trim() || createPlan.isPending} className="w-full h-12 rounded-xl">
+                    {createPlan.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Criar ficha
+                  </Button>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição (opcional)</label>
-                  <Input value={newPlanDesc} onChange={(e) => setNewPlanDesc(e.target.value)} placeholder="Observações gerais..." className="h-12 rounded-xl" />
-                </div>
-                <Button onClick={handleCreatePlan} disabled={!newPlanStudent || !newPlanName.trim() || createPlan.isPending} className="w-full h-12 rounded-xl">
-                  {createPlan.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Criar ficha
-                </Button>
               </div>
             </motion.div>
           </div>
@@ -440,34 +442,36 @@ const WorkoutsPage = () => {
         {showNewExercise && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowNewExercise(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl"
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-5">
-                <p className="font-bold text-base">Novo Exercício</p>
-                <button onClick={() => setShowNewExercise(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Nome</label>
-                  <Input value={newExName} onChange={(e) => setNewExName(e.target.value)} placeholder="Nome do exercício" className="h-12 rounded-xl" />
+              <div className="p-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                <div className="flex items-center justify-between mb-5">
+                  <p className="font-bold text-base">Novo Exercício</p>
+                  <button onClick={() => setShowNewExercise(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Grupo muscular</label>
-                  <select value={newExMuscle} onChange={(e) => setNewExMuscle(e.target.value)}
-                    className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    {muscleGroups.map((m) => <option key={m} value={m}>{m}</option>)}
-                  </select>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Nome</label>
+                    <Input value={newExName} onChange={(e) => setNewExName(e.target.value)} placeholder="Nome do exercício" className="h-12 rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Grupo muscular</label>
+                    <select value={newExMuscle} onChange={(e) => setNewExMuscle(e.target.value)}
+                      className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      {muscleGroups.map((m) => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição</label>
+                    <Input value={newExDesc} onChange={(e) => setNewExDesc(e.target.value)} placeholder="Breve descrição..." className="h-12 rounded-xl" />
+                  </div>
+                  <Button onClick={handleCreateExercise} disabled={!newExName.trim() || createExercise.isPending} className="w-full h-12 rounded-xl">
+                    {createExercise.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Criar exercício
+                  </Button>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição</label>
-                  <Input value={newExDesc} onChange={(e) => setNewExDesc(e.target.value)} placeholder="Breve descrição..." className="h-12 rounded-xl" />
-                </div>
-                <Button onClick={handleCreateExercise} disabled={!newExName.trim() || createExercise.isPending} className="w-full h-12 rounded-xl">
-                  {createExercise.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Criar exercício
-                </Button>
               </div>
             </motion.div>
           </div>
