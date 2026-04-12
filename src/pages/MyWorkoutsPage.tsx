@@ -6,7 +6,9 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
+import PaymentRequiredWall from "@/components/PaymentRequiredWall";
 import { useStudentWorkoutPlans, useLogWorkoutExecution, useWorkoutExecutions } from "@/hooks/useWorkouts";
+import { useStudentAccess } from "@/hooks/useStudentAccess";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -33,6 +35,7 @@ const MyWorkoutsPage = () => {
   const { data: plans, isLoading } = useStudentWorkoutPlans();
   const { data: executions } = useWorkoutExecutions();
   const logExecution = useLogWorkoutExecution();
+  const { isOverdue } = useStudentAccess();
 
   const handleSubmitFeedback = async () => {
     if (!showFeedback) return;
@@ -53,6 +56,9 @@ const MyWorkoutsPage = () => {
 
   return (
     <AppLayout>
+      {isOverdue ? (
+        <PaymentRequiredWall feature="fichas de treino" />
+      ) : (
       <div className="space-y-6">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
@@ -265,6 +271,7 @@ const MyWorkoutsPage = () => {
           </div>
         )}
       </AnimatePresence>
+      )}
     </AppLayout>
   );
 };

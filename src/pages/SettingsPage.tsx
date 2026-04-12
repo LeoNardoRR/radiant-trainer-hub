@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Copy, Loader2, Ticket, Link2, Moon, Sun, Share2, ExternalLink, Camera, QrCode } from "lucide-react";
+import { Copy, Loader2, Ticket, Link2, Moon, Sun, Share2, ExternalLink, Camera, QrCode, Crown, Zap, Building2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useInviteCodes, useCreateInviteCode, useRedeemInviteCode } from "@/hooks/useInviteCodes";
+import { usePlan, PLAN_CONFIG } from "@/hooks/usePlan";
+import UpgradeModal from "@/components/UpgradeModal";
 import { toast } from "sonner";
 
 const fadeUp = {
@@ -22,6 +24,8 @@ const fadeUp = {
 const SettingsPage = () => {
   const { profile, user, role } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { tier, config } = usePlan();
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [specialty, setSpecialty] = useState("");
@@ -385,7 +389,74 @@ const SettingsPage = () => {
           </>
         )}
 
-        {/* Appearance */}
+        {/* ── Meu Plano (trainers only) ──── */}
+        {role === "trainer" && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3.7} className="bg-card border border-border rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">MEU PLANO</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  tier === "business" ? "bg-violet-500/10" : tier === "pro" ? "bg-primary/10" : "bg-muted"
+                }`}>
+                  {tier === "business" ? (
+                    <Building2 className="h-5 w-5 text-violet-600" />
+                  ) : tier === "pro" ? (
+                    <Crown className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Zap className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold">{config.label}</p>
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${config.badge}`}>
+                      {config.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{config.description}</p>
+                </div>
+              </div>
+              {tier === "starter" && (
+                <button
+                  onClick={() => setShowUpgrade(true)}
+                  className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors press-scale"
+                >
+                  Upgrade
+                </button>
+              )}
+            </div>
+
+            {/* Feature list */}
+            <div className="mt-4 pt-4 border-t border-border space-y-2">
+              {[
+                { label: "Alunos", value: config.maxStudents === Infinity ? "Ilimitados" : `Até ${config.maxStudents}`, ok: true },
+                { label: "Analytics", value: tier !== "starter" ? "Incluso" : "Pro+", ok: tier !== "starter" },
+                { label: "Financeiro", value: tier !== "starter" ? "Incluso" : "Pro+", ok: tier !== "starter" },
+                { label: "Progresso", value: tier !== "starter" ? "Incluso" : "Pro+", ok: tier !== "starter" },
+                { label: "Mensagem em massa", value: tier !== "starter" ? "Incluso" : "Pro+", ok: tier !== "starter" },
+              ].map((f) => (
+                <div key={f.label} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{f.label}</span>
+                  <span className={`font-semibold text-xs ${f.ok ? "text-success" : "text-muted-foreground"}`}>{f.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {tier === "starter" && (
+              <button
+                onClick={() => setShowUpgrade(true)}
+                className="mt-4 w-full h-10 rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/15 transition-colors"
+              >
+                Ver todos os planos
+              </button>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── Appearance ─── */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3.5} className="bg-card border border-border rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary" />
@@ -416,6 +487,7 @@ const SettingsPage = () => {
           </Button>
         </motion.div>
       </div>
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
     </AppLayout>
   );
 };

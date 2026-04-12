@@ -3,6 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 type AppRole = "trainer" | "student";
+export type PlanTier = "starter" | "pro" | "business";
 
 interface Profile {
   id: string;
@@ -21,6 +22,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   role: AppRole | null;
+  planTier: PlanTier;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string, role: AppRole) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole]       = useState<AppRole | null>(null);
+  const [planTier, setPlanTier] = useState<PlanTier>("starter");
   const [loading, setLoading] = useState(true);
 
   // Prevent concurrent fetches from both getSession and onAuthStateChange
@@ -51,7 +54,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ]);
 
       setProfile(profileRes.data ?? null);
-      if (roleRes.data) setRole(roleRes.data.role as AppRole);
+      const fetchedRole = roleRes.data?.role as AppRole | undefined;
+      if (fetchedRole) setRole(fetchedRole);
+
+      // Fetch plan tier for trainers
+      if (fetchedRole === "trainer") {
+        const { data: sub } = await supabase
+          .from("trainer_subscriptions" as any)
+          .select("plan_tier")
+          .eq("trainer_id", userId)
+          .single();
+        setPlanTier((sub?.plan_tier as PlanTier) ?? "starter");
+      } else {
+        setPlanTier("starter"); // students don't have FitApp tiers
+      }
     } finally {
       fetchingRef.current = null;
       setLoading(false);
@@ -61,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const clearUserData = () => {
     setProfile(null);
     setRole(null);
+    setPlanTier("starter");
     fetchingRef.current = null;
     setLoading(false);
   };
@@ -120,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, role, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, role, planTier, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

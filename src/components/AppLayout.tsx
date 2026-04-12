@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import OnboardingTour from "@/components/OnboardingTour";
+import StudentPaymentBanner from "@/components/StudentPaymentBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -295,6 +296,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 32px)`,
         }}>
         <div className="px-4 py-5 md:px-6 lg:p-8 max-w-5xl mx-auto lg:pt-8 lg:pb-8">
+          <StudentPaymentBanner />
           {children}
         </div>
       </main>

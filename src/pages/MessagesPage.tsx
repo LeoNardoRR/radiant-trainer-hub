@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useConversations, useMessages, useSendMessage } from "@/hooks/useMessages";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStudents } from "@/hooks/useStudents";
+import { usePlan } from "@/hooks/usePlan";
 import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import EmptyState from "@/components/EmptyState";
@@ -61,6 +62,7 @@ const MessagesPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { user, role } = useAuth();
+  const { canUse } = usePlan();
   const { data: conversations } = useConversations();
   const { data: messages } = useMessages(selectedPartner || undefined);
   const sendMessage = useSendMessage();
@@ -147,9 +149,15 @@ const MessagesPage = () => {
             <h1 className="font-display font-semibold text-2xl md:text-3xl tracking-tight">Comunicação</h1>
           </div>
           {role === "trainer" && (
-            <Button onClick={() => setShowBroadcast(true)} variant="outline" className="gap-2 rounded-xl h-10 text-sm">
-              <Megaphone className="h-4 w-4" /> Mensagem em massa
-            </Button>
+            canUse("bulk_message") ? (
+              <Button onClick={() => setShowBroadcast(true)} variant="outline" className="gap-2 rounded-xl h-10 text-sm">
+                <Megaphone className="h-4 w-4" /> Mensagem em massa
+              </Button>
+            ) : (
+              <Button variant="outline" className="gap-2 rounded-xl h-10 text-sm opacity-50 cursor-not-allowed" title="Disponível no plano Pro" disabled>
+                <Megaphone className="h-4 w-4" /> Em massa (Pro)
+              </Button>
+            )
           )}
         </motion.div>
 

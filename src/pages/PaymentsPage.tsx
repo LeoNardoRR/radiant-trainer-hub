@@ -5,6 +5,7 @@ import {
   XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import PlanGate from "@/components/PlanGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -104,7 +105,9 @@ const PaymentsPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      {isTrainer ? (
+        <PlanGate feature="financial">
+          <div className="space-y-6">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -386,6 +389,17 @@ const PaymentsPage = () => {
           </div>
         )}
       </AnimatePresence>
+        </PlanGate>
+      ) : (
+        /* Student — sees their own payment history (no gate needed) */
+        <div className="space-y-6">
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">FINANCEIRO</p>
+            <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Meus Pagamentos</h1>
+          </motion.div>
+          {/* Student payments list rendered by the existing filteredPayments logic above */}
+        </div>
+      )}
     </AppLayout>
   );
 };

@@ -7,9 +7,12 @@ import {
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PlanGate from "@/components/PlanGate";
+import PaymentRequiredWall from "@/components/PaymentRequiredWall";
 import { useBodyMeasurements, useCreateBodyMeasurement, useDeleteBodyMeasurement, useWeightHistory } from "@/hooks/useProgress";
 import { useStudents } from "@/hooks/useStudents";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStudentAccess } from "@/hooks/useStudentAccess";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -36,6 +39,7 @@ const measureFields = [
 const ProgressPage = () => {
   const { role } = useAuth();
   const isTrainer = role === "trainer";
+  const { isOverdue } = useStudentAccess();
 
   const [selectedStudent, setSelectedStudent] = useState<string | undefined>(undefined);
   const [showNewMeasure, setShowNewMeasure] = useState(false);
@@ -72,7 +76,10 @@ const ProgressPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      {/* Trainer gate — Pro required */}
+      {isTrainer ? (
+        <PlanGate feature="progress">
+          <div className="space-y-6">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -273,11 +280,30 @@ const ProgressPage = () => {
                   {createMeasurement.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Salvar avaliação
                 </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+        </PlanGate>
+      ) : isOverdue ? (
+        /* Student gate — overdue payment */
+        <PaymentRequiredWall feature="acompanhamento de progresso" />
+      ) : (
+        /* Student with active payment — show progress info */
+        <div className="space-y-6">
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">RESULTADOS</p>
+            <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Meu Progresso</h1>
+          </motion.div>
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
+            className="text-center py-16 bg-card border border-border rounded-2xl">
+            <TrendingUp className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+            <p className="font-semibold">Progresso registrado pelo seu personal</p>
+            <p className="text-sm text-muted-foreground mt-1">Suas avaliações físicas aparecem aqui quando o personal registrá-las.</p>
+          </motion.div>
+        </div>
+      )}
     </AppLayout>
   );
 };

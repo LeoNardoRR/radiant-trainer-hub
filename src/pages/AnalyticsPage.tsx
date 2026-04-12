@@ -4,6 +4,7 @@ import {
   DollarSign, Award
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import PlanGate from "@/components/PlanGate";
 import { useSessions } from "@/hooks/useSessions";
 import { useStudents } from "@/hooks/useStudents";
 import { usePayments } from "@/hooks/usePayments";
@@ -125,6 +126,7 @@ const AnalyticsPage = () => {
 
   return (
     <AppLayout>
+      <PlanGate feature="analytics">
       <div className="space-y-8">
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Analytics</p>
@@ -288,6 +290,7 @@ const AnalyticsPage = () => {
           </>
         )}
       </div>
+      </PlanGate>
     </AppLayout>
   );
 };
