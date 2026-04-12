@@ -59,12 +59,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Fetch plan tier for trainers
       if (fetchedRole === "trainer") {
-        const { data: sub } = await supabase
-          .from("trainer_subscriptions" as any)
-          .select("plan_tier")
-          .eq("trainer_id", userId)
-          .single();
-        setPlanTier((sub?.plan_tier as PlanTier) ?? "starter");
+        try {
+          const { data: sub } = await supabase
+            .from("trainer_subscriptions" as any)
+            .select("plan_tier")
+            .eq("trainer_id", userId)
+            .single();
+          setPlanTier(((sub as any)?.plan_tier as PlanTier) ?? "starter");
+        } catch {
+          setPlanTier("starter");
+        }
       } else {
         setPlanTier("starter"); // students don't have FitApp tiers
       }
