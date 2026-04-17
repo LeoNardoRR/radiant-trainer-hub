@@ -4,6 +4,7 @@ import { Send, ArrowLeft, MessageSquare, Check, CheckCheck, Plus, Search, Megaph
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useConversations, useMessages, useSendMessage } from "@/hooks/useMessages";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStudents } from "@/hooks/useStudents";
@@ -63,8 +64,8 @@ const MessagesPage = () => {
 
   const { user, role } = useAuth();
   const { canUse } = usePlan();
-  const { data: conversations } = useConversations();
-  const { data: messages } = useMessages(selectedPartner || undefined);
+  const { data: conversations, isLoading: isLoadingConversations } = useConversations();
+  const { data: messages, isLoading: isLoadingMessages } = useMessages(selectedPartner || undefined);
   const sendMessage = useSendMessage();
   const { data: students } = useStudents();
   const { data: trainerProfile } = useTrainerProfile();
@@ -221,7 +222,13 @@ const MessagesPage = () => {
             )}
 
             {/* Existing conversations */}
-            {!conversations || conversations.length === 0 ? (
+            {isLoadingConversations ? (
+              <div className="p-3 space-y-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : !conversations || conversations.length === 0 ? (
               <EmptyState icon={MessageSquare} emoji="💬" title="Nenhuma conversa" description="Toque em 'Nova conversa' para começar." />
             ) : (
               conversations.map((conv) => (
@@ -280,7 +287,14 @@ const MessagesPage = () => {
                   </div>
                 </div>
                 <div className="flex-1 p-4 space-y-1 overflow-y-auto bg-muted/10">
-                  {Object.entries(groupedMessages).map(([date, msgs]) => (
+                  {isLoadingMessages ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-start"><Skeleton className="h-12 w-3/4 rounded-2xl rounded-bl-md" /></div>
+                      <div className="flex justify-end"><Skeleton className="h-12 w-1/2 rounded-2xl rounded-br-md" /></div>
+                      <div className="flex justify-start"><Skeleton className="h-16 w-2/3 rounded-2xl rounded-bl-md" /></div>
+                      <div className="flex justify-end"><Skeleton className="h-10 w-1/3 rounded-2xl rounded-br-md" /></div>
+                    </div>
+                  ) : Object.entries(groupedMessages).map(([date, msgs]) => (
                     <div key={date}>
                       <div className="flex justify-center my-3">
                         <span className="text-[10px] text-muted-foreground font-body bg-muted/80 px-3 py-1 rounded-full">{date}</span>
@@ -315,7 +329,7 @@ const MessagesPage = () => {
                       ))}
                     </div>
                   ))}
-                  {(!messages || messages.length === 0) && (
+                  {!isLoadingMessages && (!messages || messages.length === 0) && (
                     <EmptyState icon={MessageSquare} emoji="👋" title="Diga olá!" description="Comece uma conversa agora." />
                   )}
                   <div ref={messagesEndRef} />

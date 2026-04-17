@@ -77,11 +77,24 @@ export const StudentDashboard = () => {
     <AppLayout>
       {isLoading ? (
         <div className="space-y-4">
-          <div className="rounded-2xl bg-primary/20 animate-pulse h-36" />
-          <div className="grid grid-cols-2 gap-3">
-            {[1,2].map(i=><div key={i} className="h-28 rounded-2xl bg-muted/60 animate-pulse" />)}
+          <Skeleton className="h-[140px] w-full rounded-2xl" />
+          <div className="space-y-3">
+            <div className="flex justify-between items-center px-1">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <Skeleton className="h-[88px] w-full rounded-2xl" />
+            <div className="grid grid-cols-3 gap-2">
+              <Skeleton className="h-[100px] rounded-2xl" />
+              <Skeleton className="h-[100px] rounded-2xl" />
+              <Skeleton className="h-[100px] rounded-2xl" />
+            </div>
           </div>
-          {[1,2,3].map(i=><div key={i} className="h-16 rounded-2xl bg-muted/40 animate-pulse" />)}
+          <div className="grid grid-cols-2 gap-3">
+            <Skeleton className="h-[92px] rounded-2xl" />
+            <Skeleton className="h-[92px] rounded-2xl" />
+          </div>
+          <Skeleton className="h-[160px] w-full rounded-2xl" />
         </div>
       ) : (
       <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-4">

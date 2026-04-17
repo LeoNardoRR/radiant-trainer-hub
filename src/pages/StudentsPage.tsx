@@ -4,6 +4,7 @@ import { Search, UserPlus, ChevronRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
 import { useStudents } from "@/hooks/useStudents";
+import { Skeleton } from "@/components/ui/skeleton";
 import StudentDetailSheet from "@/components/StudentDetailSheet";
 import { Link } from "react-router-dom";
 
@@ -116,8 +117,8 @@ const StudentsPage = () => {
         {/* List */}
         {isLoading ? (
           <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-[72px] rounded-2xl bg-muted/50 animate-pulse" />
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-[72px] w-full rounded-2xl" />
             ))}
           </div>
         ) : filtered.length === 0 ? (

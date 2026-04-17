@@ -11,6 +11,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import OnboardingTour from "@/components/OnboardingTour";
 import StudentPaymentBanner from "@/components/StudentPaymentBanner";
 import { AppIcon } from "@/components/AppIcon";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -127,6 +128,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="h-[100dvh] bg-background flex overflow-hidden">
+      <OfflineBanner />
 
       {/* ═══ DESKTOP SIDEBAR ════════════════════════════════ */}
       <aside
