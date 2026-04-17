@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 20% 7%;
+    --foreground: 210 20% 94%;
+    --card: 222 18% 10%;
+    --card-foreground: 210 20% 94%;
+    --popover: 222 18% 10%;
+    --popover-foreground: 210 20% 94%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 222 20% 7%;
+    --secondary: 222 16% 15%;
+    --secondary-foreground: 210 20% 80%;
+    --muted: 222 16% 13%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 222 16% 17%;
+    --accent-foreground: 210 20% 94%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 94%;
+    --border: 222 16% 18%;
+    --input: 222 16% 15%;
+    --ring: 142 71% 45%;
+    --radius: 0.875rem;
+    --success: 142 71% 45%;
+    --success-foreground: 222 20% 7%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 20% 7%;
+    --risk: 0 72% 51%;
+    --risk-foreground: 210 20% 94%;
+    --sidebar-background: 222 22% 6%;
+    --sidebar-foreground: 210 20% 80%;
+    --sidebar-primary: 142 71% 45%;
+    --sidebar-primary-foreground: 222 20% 7%;
+    --sidebar-accent: 222 18% 11%;
+    --sidebar-accent-foreground: 210 20% 94%;
+    --sidebar-border: 222 16% 13%;
+    --sidebar-ring: 142 71% 45%;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100svh;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl border border-border bg-card p-5;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .stat-card:hover {
+    @apply border-primary/30;
+    transform: translateY(-1px);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, hsl(var(--primary)/0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-all duration-150;
+  }
+  .nav-item:hover {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+  }
+  .nav-item.active {
+    @apply bg-primary/10 text-primary;
+  }
+  .nav-item .icon {
+    @apply size-5 shrink-0;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success ring-1 ring-success/20;
+  }
+  .badge-warning {
+    @apply inline-flex items-center rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning ring-1 ring-warning/20;
+  }
+  .badge-risk {
+    @apply inline-flex items-center rounded-full bg-risk/10 px-2.5 py-0.5 text-xs font-medium text-risk ring-1 ring-risk/20;
+  }
+  .badge-neutral {
+    @apply inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground;
+  }
+
+  .glass-card {
+    background: hsl(var(--card)/0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    @apply rounded-2xl border border-border/60;
+  }
+
+  .progress-bar {
+    @apply relative h-1.5 w-full overflow-hidden rounded-full bg-muted;
+  }
+  .progress-bar-fill {
+    @apply absolute inset-y-0 left-0 rounded-full bg-primary transition-all duration-700;
+  }
+  .progress-bar-fill.warning { @apply bg-warning; }
+  .progress-bar-fill.risk    { @apply bg-risk; }
+
+  .avatar {
+    @apply relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 font-semibold text-primary;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-medium text-muted-foreground transition-colors;
+  }
+  .chip:hover { @apply border-primary/30 text-foreground; }
+  .chip.selected { @apply border-primary/40 bg-primary/10 text-primary; }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(142 90% 65%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary)/0.15), 0 0 40px hsl(var(--primary)/0.08);
+  }
+
+  .scrollbar-thin { scrollbar-width: thin; }
+
+  .animate-in-up {
+    animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--primary)/0.35); }
+  70%  { box-shadow: 0 0 0 8px hsl(var(--primary)/0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary)/0); }
+}
+
+.pulse-ring { animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

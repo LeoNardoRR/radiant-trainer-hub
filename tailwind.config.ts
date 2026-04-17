@@ -1,99 +1,127 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 export default {
-  darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
-  prefix: "",
+  darkMode: ['class'],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
+  prefix: '',
   theme: {
     container: {
       center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      padding: '2rem',
+      screens: { '2xl': '1400px' },
     },
     extend: {
       fontFamily: {
-        display: ["'Inter'", "-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "sans-serif"],
-        body: ["'Inter'", "-apple-system", "BlinkMacSystemFont", "'SF Pro Text'", "sans-serif"],
+        display: ["'Syne'", "'DM Sans'", 'sans-serif'],
+        body:    ["'DM Sans'", 'sans-serif'],
+        sans:    ["'DM Sans'", 'sans-serif'],
       },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border:      'hsl(var(--border))',
+        input:       'hsl(var(--input))',
+        ring:        'hsl(var(--ring))',
+        background:  'hsl(var(--background))',
+        foreground:  'hsl(var(--foreground))',
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT:    'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT:    'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT:    'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT:    'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT:    'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT:    'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT:    'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
         },
         success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
+          DEFAULT:    'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
         },
         warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
+          DEFAULT:    'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
         },
         risk: {
-          DEFAULT: "hsl(var(--risk))",
-          foreground: "hsl(var(--risk-foreground))",
+          DEFAULT:    'hsl(var(--risk))',
+          foreground: 'hsl(var(--risk-foreground))',
         },
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+          DEFAULT:              'hsl(var(--sidebar-background))',
+          foreground:           'hsl(var(--sidebar-foreground))',
+          primary:              'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          accent:               'hsl(var(--sidebar-accent))',
+          'accent-foreground':  'hsl(var(--sidebar-accent-foreground))',
+          border:               'hsl(var(--sidebar-border))',
+          ring:                 'hsl(var(--sidebar-ring))',
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg:   'var(--radius)',
+        md:   'calc(var(--radius) - 2px)',
+        sm:   'calc(var(--radius) - 6px)',
+        '2xl': '1rem',
+        '3xl': '1.25rem',
+      },
+      fontSize: {
+        '2xs': ['0.625rem', { lineHeight: '1rem' }],
       },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+        'accordion-down': {
+          from: { height: '0' },
+          to:   { height: 'var(--radix-accordion-content-height)' },
         },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to:   { height: '0' },
+        },
+        'fade-in': {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
+        },
+        'slide-up': {
+          from: { opacity: '0', transform: 'translateY(12px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+        'pulse-ring': {
+          '0%':   { boxShadow: '0 0 0 0 hsl(142 71% 45% / 0.4)' },
+          '70%':  { boxShadow: '0 0 0 8px hsl(142 71% 45% / 0)' },
+          '100%': { boxShadow: '0 0 0 0 hsl(142 71% 45% / 0)' },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up':   'accordion-up 0.2s ease-out',
+        'fade-in':        'fade-in 0.35s ease-out',
+        'slide-up':       'slide-up 0.35s cubic-bezier(0.16,1,0.3,1)',
+        'pulse-ring':     'pulse-ring 2s cubic-bezier(0.455,0.03,0.515,0.955) infinite',
+      },
+      boxShadow: {
+        glow: '0 0 24px hsl(142 71% 45% / 0.18)',
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
