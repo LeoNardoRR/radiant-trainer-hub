@@ -104,11 +104,11 @@ const OnboardingTour = () => {
     if (!user || !role) return;
     const key = `${ONBOARDING_KEY}-${user.id}`;
     const completed = localStorage.getItem(key);
-    if (!completed) {
-      // Small delay for first load to feel natural
-      const t = setTimeout(() => setShow(true), 800);
-      return () => clearTimeout(t);
-    }
+    if (completed) return; // Already completed — never show again
+    // Mark as completed immediately to prevent re-showing
+    localStorage.setItem(key, "true");
+    const t = setTimeout(() => setShow(true), 800);
+    return () => clearTimeout(t);
   }, [user, role]);
 
   const steps = role === "trainer" ? trainerSteps : studentSteps;
@@ -138,22 +138,22 @@ const OnboardingTour = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+        className="fixed inset-0 z-[140] flex items-end sm:items-center justify-center p-3 sm:p-4"
       >
-        {/* Backdrop */}
         <div className="absolute inset-0 bg-foreground/40 backdrop-blur-md" onClick={handleComplete} />
 
-        {/* Card */}
         <motion.div
           key={step}
           initial={{ opacity: 0, y: 60, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 60, scale: 0.95 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full sm:max-w-sm mx-4 mb-0 sm:mb-0"
+          className="relative w-full sm:max-w-sm max-h-[min(82dvh,720px)] sm:max-h-[90dvh] mx-auto"
         >
-          <div className="bg-background border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
-            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+          <div
+            className="bg-background border border-border rounded-3xl shadow-2xl overflow-hidden"
+            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+          >
             
             {/* Header gradient */}
             <div className={`bg-gradient-to-br ${current.color} p-6 pb-10 relative overflow-hidden`}>
@@ -171,8 +171,7 @@ const OnboardingTour = () => {
               </p>
             </div>
 
-            {/* Content */}
-            <div className="px-6 -mt-4">
+            <div className="px-5 sm:px-6 -mt-4 max-h-[calc(min(82dvh,720px)-220px)] overflow-y-auto">
               <div className="bg-background border border-border rounded-2xl p-5 shadow-lg">
                 <h2 className="font-display font-bold text-xl tracking-tight mb-1">{current.title}</h2>
                 <p className="text-sm text-primary font-display font-medium mb-3">{current.subtitle}</p>
@@ -180,8 +179,7 @@ const OnboardingTour = () => {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="px-6 pt-5 pb-2 flex gap-3">
+            <div className="px-5 sm:px-6 pt-4 pb-2 flex gap-3 sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
               <button onClick={handleComplete}
                 className="flex-shrink-0 px-4 py-3 text-sm font-body text-muted-foreground hover:text-foreground transition-colors min-h-[48px] rounded-xl">
                 Pular

@@ -1,17 +1,27 @@
 {
-  "name": "FitApp",
+  "name": "FitApp — Personal Trainer App",
   "short_name": "FitApp",
-  "description": "Agendamento inteligente para Personal Trainers",
+  "description": "Gerencie agenda, prescreva treinos e acompanhe resultados de alunos.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#f7f9fb",
-  "theme_color": "#007AFF",
+  "background_color": "#0d0a1a",
+  "theme_color": "#7c3aed",
   "orientation": "portrait",
+  "lang": "pt-BR",
   "icons": [
     {
-      "src": "/placeholder.svg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "categories": ["health", "fitness", "productivity"]
 }

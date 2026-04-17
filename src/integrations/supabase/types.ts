@@ -77,6 +77,33 @@ export type Database = {
         }
         Relationships: []
       }
+      exercises: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          muscle_group: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          muscle_group?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          muscle_group?: string
+          name?: string
+        }
+        Relationships: []
+      }
       invite_codes: {
         Row: {
           code: string
@@ -166,6 +193,95 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          sessions_per_month: number | null
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          sessions_per_month?: number | null
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          sessions_per_month?: number | null
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          plan_id: string | null
+          reference_month: string | null
+          status: string
+          student_id: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          plan_id?: string | null
+          reference_month?: string | null
+          status?: string
+          student_id: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          plan_id?: string | null
+          reference_month?: string | null
+          status?: string
+          student_id?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -305,6 +421,50 @@ export type Database = {
         }
         Relationships: []
       }
+      student_plan_assignments: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          plan_id: string
+          start_date: string
+          student_id: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          plan_id: string
+          start_date?: string
+          student_id: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          plan_id?: string
+          start_date?: string
+          student_id?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_plan_assignments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trainer_settings: {
         Row: {
           break_between: number
@@ -427,6 +587,150 @@ export type Database = {
           total_workouts?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      workout_executions: {
+        Row: {
+          completed_at: string
+          duration_minutes: number | null
+          feedback_energy: number | null
+          feedback_muscle_pain: number | null
+          feedback_notes: string | null
+          feedback_sleep_quality: number | null
+          id: string
+          session_id: string | null
+          student_id: string
+          workout_plan_id: string | null
+        }
+        Insert: {
+          completed_at?: string
+          duration_minutes?: number | null
+          feedback_energy?: number | null
+          feedback_muscle_pain?: number | null
+          feedback_notes?: string | null
+          feedback_sleep_quality?: number | null
+          id?: string
+          session_id?: string | null
+          student_id: string
+          workout_plan_id?: string | null
+        }
+        Update: {
+          completed_at?: string
+          duration_minutes?: number | null
+          feedback_energy?: number | null
+          feedback_muscle_pain?: number | null
+          feedback_notes?: string | null
+          feedback_sleep_quality?: number | null
+          id?: string
+          session_id?: string | null
+          student_id?: string
+          workout_plan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_executions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_executions_workout_plan_id_fkey"
+            columns: ["workout_plan_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_exercises: {
+        Row: {
+          created_at: string
+          exercise_id: string | null
+          exercise_name: string
+          id: string
+          load_kg: number | null
+          notes: string | null
+          order_index: number | null
+          reps: string | null
+          rest_seconds: number | null
+          sets: number | null
+          workout_plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id?: string | null
+          exercise_name: string
+          id?: string
+          load_kg?: number | null
+          notes?: string | null
+          order_index?: number | null
+          reps?: string | null
+          rest_seconds?: number | null
+          sets?: number | null
+          workout_plan_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string | null
+          exercise_name?: string
+          id?: string
+          load_kg?: number | null
+          notes?: string | null
+          order_index?: number | null
+          reps?: string | null
+          rest_seconds?: number | null
+          sets?: number | null
+          workout_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_exercises_workout_plan_id_fkey"
+            columns: ["workout_plan_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          student_id: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          student_id: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          student_id?: string
+          trainer_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
