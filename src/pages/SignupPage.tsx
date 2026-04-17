@@ -38,6 +38,7 @@ const SignupPage = () => {
   const initialRole = (searchParams.get("role") === "student" || inviteFromUrl ? "student" : "trainer") as "trainer" | "student";
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { signUp, user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -68,8 +69,9 @@ const SignupPage = () => {
     setIsLoading(true);
     try {
       await signUp(data.email.trim().toLowerCase(), data.password, data.fullName.trim(), data.role);
+      setIsSuccess(true);
       toast.success("Conta criada! Verifique seu email para confirmar.");
-      navigate("/login");
+      // We don't navigate immediately anymore to show the success state
     } catch (err: any) {
       const msg = err.message?.includes("already registered") ? "Este email já está cadastrado" : err.message;
       toast.error(msg);
@@ -105,109 +107,128 @@ const SignupPage = () => {
       <div className="flex-1 flex items-center justify-center p-6 py-10">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           className="w-full max-w-sm space-y-5">
-          <div className="lg:hidden mb-2 flex items-center gap-2">
-            <AppIcon size="sm" />
-            <span className="text-[13px] font-semibold tracking-tight">FitApp</span>
-          </div>
-          <div>
-            <h2 className="font-bold text-2xl tracking-tight mb-1.5">Criar conta</h2>
-            <p className="text-[13px] text-muted-foreground">
-              Já tem conta?{" "}
-              <Link to="/login" className="text-primary font-semibold hover:underline">Entrar</Link>
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-            {/* Role selector */}
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setValue("role", "trainer")}
-                className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
-                  selectedRole === "trainer"
-                    ? "border-primary bg-primary/6 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/20"
-                }`}>
-                <Dumbbell className="h-5 w-5" strokeWidth={selectedRole === "trainer" ? 2 : 1.5} />
-                <span className="text-[12px] font-semibold">Personal Trainer</span>
-                <span className="text-[10px] text-muted-foreground">Gerencie alunos</span>
-              </button>
-              <button type="button" onClick={() => setValue("role", "student")}
-                className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
-                  selectedRole === "student"
-                    ? "border-[hsl(265,83%,57%)] bg-[hsl(265,83%,57%,0.06)] text-[hsl(265,83%,57%)]"
-                    : "border-border bg-card text-muted-foreground hover:border-[hsl(265,83%,57%,0.2)]"
-                }`}>
-                <User className="h-5 w-5" strokeWidth={selectedRole === "student" ? 2 : 1.5} />
-                <span className="text-[12px] font-semibold">Aluno</span>
-                <span className="text-[10px] text-muted-foreground">Acompanhe treinos</span>
-              </button>
+          {isSuccess ? (
+            <div className="text-center space-y-6 py-4">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="h-10 w-10 text-primary" strokeWidth={3} />
+              </div>
+              <div className="space-y-2">
+                <h2 className="font-bold text-2xl tracking-tight">Quase lá!</h2>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Enviamos um email de confirmação para você. Por favor, verifique sua caixa de entrada (e a pasta de spam) para ativar sua conta.
+                </p>
+              </div>
+              <Button onClick={() => navigate("/login")} className="w-full h-12 text-[15px] mt-4">
+                Ir para o Login
+              </Button>
             </div>
-
-            <div className="space-y-3">
-              {/* Name */}
+          ) : (
+            <>
+              <div className="lg:hidden mb-2 flex items-center gap-2">
+                <AppIcon size="sm" />
+                <span className="text-[13px] font-semibold tracking-tight">FitApp</span>
+              </div>
               <div>
-                <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Nome completo</label>
-                <Input
-                  {...register("fullName")}
-                  placeholder="Seu nome"
-                  className={`h-12 ${errors.fullName ? "border-risk focus-visible:ring-risk" : ""}`}
-                />
-                {errors.fullName && <p className="text-[11px] text-risk mt-1">{errors.fullName.message}</p>}
+                <h2 className="font-bold text-2xl tracking-tight mb-1.5">Criar conta</h2>
+                <p className="text-[13px] text-muted-foreground">
+                  Já tem conta?{" "}
+                  <Link to="/login" className="text-primary font-semibold hover:underline">Entrar</Link>
+                </p>
               </div>
 
-              {/* Email */}
-              <div>
-                <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
-                <Input
-                  {...register("email")}
-                  type="email"
-                  placeholder="seu@email.com"
-                  className={`h-12 ${errors.email ? "border-risk focus-visible:ring-risk" : ""}`}
-                />
-                {errors.email && <p className="text-[11px] text-risk mt-1">{errors.email.message}</p>}
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
-                <div className="relative">
-                  <Input
-                    {...register("password")}
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Crie uma senha segura"
-                    className={`h-12 pr-12 ${errors.password ? "border-risk focus-visible:ring-risk" : ""}`}
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+                {/* Role selector */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button type="button" onClick={() => setValue("role", "trainer")}
+                    className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
+                      selectedRole === "trainer"
+                        ? "border-primary bg-primary/6 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/20"
+                    }`}>
+                    <Dumbbell className="h-5 w-5" strokeWidth={selectedRole === "trainer" ? 2 : 1.5} />
+                    <span className="text-[12px] font-semibold">Personal Trainer</span>
+                    <span className="text-[10px] text-muted-foreground">Gerencie alunos</span>
+                  </button>
+                  <button type="button" onClick={() => setValue("role", "student")}
+                    className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
+                      selectedRole === "student"
+                        ? "border-[hsl(265,83%,57%)] bg-[hsl(265,83%,57%,0.06)] text-[hsl(265,83%,57%)]"
+                        : "border-border bg-card text-muted-foreground hover:border-[hsl(265,83%,57%,0.2)]"
+                    }`}>
+                    <User className="h-5 w-5" strokeWidth={selectedRole === "student" ? 2 : 1.5} />
+                    <span className="text-[12px] font-semibold">Aluno</span>
+                    <span className="text-[10px] text-muted-foreground">Acompanhe treinos</span>
                   </button>
                 </div>
-                
-                <div className="mt-2 space-y-1">
-                  {passwordChecks.map((check) => (
-                    <div key={check.label} className="flex items-center gap-1.5">
-                      {check.passed ? (
-                        <Check className="h-3 w-3 text-success" />
-                      ) : (
-                        <X className="h-3 w-3 text-muted-foreground" />
-                      )}
-                      <span className={`text-[11px] ${check.passed ? "text-success" : "text-muted-foreground"}`}>{check.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full h-12 text-[15px]">
-              {isLoading ? (
-                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Criando...</>
-              ) : (
-                <>Criar conta<ArrowRight className="ml-1.5 h-4 w-4" /></>
-              )}
-            </Button>
-            <p className="text-center text-[11px] text-muted-foreground">
-              Ao criar conta, você concorda com os Termos e Política de Privacidade
-            </p>
-          </form>
+                <div className="space-y-3">
+                  {/* Name */}
+                  <div>
+                    <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Nome completo</label>
+                    <Input
+                      {...register("fullName")}
+                      placeholder="Seu nome"
+                      className={`h-12 ${errors.fullName ? "border-risk focus-visible:ring-risk" : ""}`}
+                    />
+                    {errors.fullName && <p className="text-[11px] text-risk mt-1">{errors.fullName.message}</p>}
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
+                    <Input
+                      {...register("email")}
+                      type="email"
+                      placeholder="seu@email.com"
+                      className={`h-12 ${errors.email ? "border-risk focus-visible:ring-risk" : ""}`}
+                    />
+                    {errors.email && <p className="text-[11px] text-risk mt-1">{errors.email.message}</p>}
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
+                    <div className="relative">
+                      <Input
+                        {...register("password")}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Crie uma senha segura"
+                        className={`h-12 pr-12 ${errors.password ? "border-risk focus-visible:ring-risk" : ""}`}
+                      />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    
+                    <div className="mt-2 space-y-1">
+                      {passwordChecks.map((check) => (
+                        <div key={check.label} className="flex items-center gap-1.5">
+                          {check.passed ? (
+                            <Check className="h-3 w-3 text-success" />
+                          ) : (
+                            <X className="h-3 w-3 text-muted-foreground" />
+                          )}
+                          <span className={`text-[11px] ${check.passed ? "text-success" : "text-muted-foreground"}`}>{check.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={isLoading} className="w-full h-12 text-[15px]">
+                  {isLoading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin mr-2" />Criando...</>
+                  ) : (
+                    <>Criar conta<ArrowRight className="ml-1.5 h-4 w-4" /></>
+                  )}
+                </Button>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  Ao criar conta, você concorda com os Termos e Política de Privacidade
+                </p>
+              </form>
+            </>
+          )}
         </motion.div>
       </div>
     </div>

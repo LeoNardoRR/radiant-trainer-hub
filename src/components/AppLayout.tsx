@@ -208,22 +208,22 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
 
           {/* Right — actions */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-1.5">
             <Link to="/notifications"
-              className="relative p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
+              className="relative p-2 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
               <Bell className="h-5 w-5 text-muted-foreground" strokeWidth={1.7} />
               {unread > 0 && (
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background" />
               )}
             </Link>
             <button onClick={toggleTheme} aria-label="Alternar tema de cores"
-              className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
               {theme === "dark"
                 ? <Sun  className="h-5 w-5 text-muted-foreground" />
                 : <Moon className="h-5 w-5 text-muted-foreground" />}
             </button>
             <button onClick={handleSignOut} aria-label="Sair da conta"
-              className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
               <LogOut className="h-5 w-5 text-muted-foreground" strokeWidth={1.7} />
             </button>
           </div>
