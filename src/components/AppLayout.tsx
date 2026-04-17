@@ -127,7 +127,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const sidebarBdr = theme === "dark" ? "#15102a" : "#2d1a5c";
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-x-hidden">
+    <div className="h-[100dvh] bg-background flex overflow-hidden">
       <OfflineBanner />
 
       {/* ═══ DESKTOP SIDEBAR ════════════════════════════════ */}
@@ -291,10 +291,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* ═══ MAIN CONTENT — scrolls independently ═══════════════ */}
       <main
-        className="flex-1 lg:ml-[230px]"
+        className="flex-1 lg:ml-[230px] overflow-y-auto"
         style={{
           paddingTop: "calc(56px + env(safe-area-inset-top))",
-          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 1.5rem)`,
+          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 2rem)`,
         }}>
         <div className="px-4 py-5 md:px-6 lg:p-8 max-w-5xl mx-auto lg:pt-8 lg:pb-8">
           <StudentPaymentBanner />

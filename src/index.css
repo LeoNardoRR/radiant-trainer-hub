@@ -105,6 +105,7 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
     height: 100dvh;
     height: -webkit-fill-available;
   }
@@ -114,6 +115,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
     touch-action: manipulation;
     min-height: 100dvh;
     min-height: -webkit-fill-available;
