@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowRight, Loader2, Dumbbell, User, Eye, EyeOff, Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { AppIcon } from "@/components/AppIcon";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -69,9 +70,7 @@ const SignupPage = () => {
         <div className="max-w-sm">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="flex items-center gap-2.5 mb-10">
-            <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-bold text-lg">F</span>
-            </div>
+            <AppIcon size="md" />
             <span className="text-[15px] font-semibold tracking-tight">FitApp</span>
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
@@ -90,9 +89,7 @@ const SignupPage = () => {
         <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           className="w-full max-w-sm space-y-5" noValidate>
           <div className="lg:hidden mb-2 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-bold text-sm">F</span>
-            </div>
+            <AppIcon size="sm" />
             <span className="text-[13px] font-semibold tracking-tight">FitApp</span>
           </div>
           <div>

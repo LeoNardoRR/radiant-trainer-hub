@@ -3,6 +3,7 @@ import { ArrowRight, Calendar, Bell, Users, BarChart3, Shield, Zap } from "lucid
 import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { AppIcon } from "@/components/AppIcon";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -34,9 +35,7 @@ const LandingPage = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl overflow-hidden shadow-sm">
-              <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
-            </div>
+            <AppIcon size="sm" />
             <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
@@ -235,9 +234,7 @@ const LandingPage = () => {
       <footer className="border-t border-border py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg overflow-hidden">
-              <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
-            </div>
+            <AppIcon size="sm" className="w-6 h-6 rounded-lg" />
             <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </div>
           <p className="text-[12px] text-muted-foreground">© 2026 FitApp. Todos os direitos reservados.</p>

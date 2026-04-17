@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Loader2, Mail, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AppIcon } from "@/components/AppIcon";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -46,9 +47,7 @@ const ForgotPasswordPage = () => {
       >
         {/* Logo */}
         <div className="flex items-center gap-2 mb-10">
-          <div className="w-9 h-9 rounded-xl overflow-hidden shadow-sm">
-            <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
-          </div>
+          <AppIcon size="sm" />
           <span className="text-[13px] font-bold tracking-tight">FitApp</span>
         </div>
 

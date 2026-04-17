@@ -21,6 +21,63 @@ export const useUserStreak = (userId?: string) => {
   });
 };
 
+export const useLeaderboard = () => {
+  const { user, role, profile } = useAuth();
+
+  return useQuery({
+    queryKey: ["leaderboard", profile?.trainer_id, user?.id],
+    queryFn: async () => {
+      const trainerId = role === "trainer" ? user!.id : profile?.trainer_id;
+      if (!trainerId) return [];
+
+      const { data: students } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url")
+        .eq("trainer_id", trainerId)
+        .eq("status", "active");
+
+      if (!students || students.length === 0) return [];
+
+      const studentIds = students.map((s) => s.user_id);
+      const { data: streaks } = await supabase
+        .from("user_streaks")
+        .select("*")
+        .in("user_id", studentIds);
+
+      const { data: badges } = await supabase
+        .from("user_badges")
+        .select("user_id, badge_id")
+        .in("user_id", studentIds);
+
+      const badgeCounts: Record<string, number> = {};
+      badges?.forEach((b) => {
+        badgeCounts[b.user_id] = (badgeCounts[b.user_id] || 0) + 1;
+      });
+
+      const streakMap: Record<string, any> = {};
+      streaks?.forEach((s) => {
+        streakMap[s.user_id] = s;
+      });
+
+      return students
+        .map((s) => ({
+          user_id: s.user_id,
+          name: s.full_name,
+          avatar_url: s.avatar_url,
+          total_workouts: streakMap[s.user_id]?.total_workouts || 0,
+          current_streak: streakMap[s.user_id]?.current_streak || 0,
+          longest_streak: streakMap[s.user_id]?.longest_streak || 0,
+          badges: badgeCounts[s.user_id] || 0,
+          score: (streakMap[s.user_id]?.total_workouts || 0) * 10 +
+            (streakMap[s.user_id]?.current_streak || 0) * 5 +
+            (badgeCounts[s.user_id] || 0) * 20,
+        }))
+        .sort((a, b) => b.score - a.score);
+    },
+    enabled: !!user,
+  });
+};
+
 export const useBadges = () => {
   return useQuery({
     queryKey: ["badges"],

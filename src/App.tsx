@@ -72,6 +72,8 @@ const PageWrap = ({ children }: { children: React.ReactNode }) => (
 
 // ── Demo banner ───────────────────────────────────────────────
 const DemoBanner = () => {
+  return null; // Disabled indefinitely
+
   const { isDemo, enable, disable } = useDemoMode();
   const { user } = useAuth();
 

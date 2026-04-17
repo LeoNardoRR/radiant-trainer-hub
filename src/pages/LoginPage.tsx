@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { AppIcon } from "@/components/AppIcon";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const MIN_PASSWORD_LEN = 6;
@@ -17,6 +18,7 @@ const LoginPage = () => {
   const [touched, setTouched]         = useState({ email: false, password: false });
   const [isLoading, setIsLoading]     = useState(false);
   const { signIn, user, loading } = useAuth();
+  const navigate = useNavigate();
 
   // Já logado? Vai pro dashboard direto
   if (!loading && user) return <Navigate to="/dashboard" replace />;
@@ -33,10 +35,7 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       await signIn(email.trim().toLowerCase(), password);
-      // window.location.replace => full reload com sessão já nos cookies
-      // Evita race condition onde ProtectedRoute ainda vê user=null
-      // logo após signIn() resolver mas antes do onAuthStateChange disparar.
-      window.location.replace("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast.error(
         err.message?.includes("Invalid login credentials")
@@ -54,9 +53,7 @@ const LoginPage = () => {
         <div className="max-w-sm">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="flex items-center gap-2.5 mb-10">
-            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-sm">
-              <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
-            </div>
+            <AppIcon size="md" />
             <span className="text-[15px] font-bold tracking-tight">FitApp</span>
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
@@ -82,9 +79,7 @@ const LoginPage = () => {
         >
           {/* Mobile logo */}
           <div className="lg:hidden mb-2 flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-sm">
-              <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
-            </div>
+            <AppIcon size="sm" />
             <span className="text-[13px] font-bold tracking-tight">FitApp</span>
           </div>
 

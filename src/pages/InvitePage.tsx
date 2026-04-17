@@ -7,6 +7,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { AppIcon } from "@/components/AppIcon";
 
 const InvitePage = () => {
   const { code } = useParams<{ code: string }>();
@@ -27,9 +28,9 @@ const InvitePage = () => {
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className="w-20 h-20 rounded-3xl overflow-hidden shadow-2xl mb-6"
+        className="mb-6"
       >
-        <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
+        <AppIcon size="xl" className="shadow-2xl" />
       </motion.div>
 
       <motion.div

@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, CalendarDays, Users, Bell, BarChart3,
   MessageSquare, Settings, LogOut, Moon, Sun,
-  Dumbbell, TrendingUp, DollarSign, Camera,
+  Dumbbell, TrendingUp, DollarSign, Camera, Activity
 } from "lucide-react";
 import { useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import OnboardingTour from "@/components/OnboardingTour";
 import StudentPaymentBanner from "@/components/StudentPaymentBanner";
+import { AppIcon } from "@/components/AppIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -135,9 +136,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-5 py-5">
           <Link to="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: "linear-gradient(135deg, #7c3aed, #3b82f6)" }}>
-              <img src="/icon-192.png" alt="FitApp" className="w-full h-full object-cover" />
-            </div>
+            <AppIcon size="sm" />
             <span className="text-white/90 font-bold text-[15px]">FitApp</span>
           </Link>
         </div>
@@ -168,7 +167,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* User footer */}
         <div className="p-3 space-y-1" style={{ borderTop: `1px solid ${sidebarBdr}` }}>
-          <button onClick={toggleTheme}
+          <button onClick={toggleTheme} aria-label="Alternar tema de cores"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-white/50 hover:bg-white/6 hover:text-white/80 transition-all text-sm min-h-[44px]">
             {theme === "dark"
               ? <Sun  className="h-4 w-4 shrink-0" strokeWidth={1.7} />
@@ -181,7 +180,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <p className="text-[13px] font-semibold text-white/80 truncate">{profile?.full_name ?? "—"}</p>
               <p className="text-[10px] text-white/35 capitalize">{role}</p>
             </div>
-            <button onClick={handleSignOut} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-white/6 rounded-xl transition-all">
+            <button onClick={handleSignOut} aria-label="Sair da conta" className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-white/6 rounded-xl transition-all">
               <LogOut className="h-4 w-4 text-white/40" strokeWidth={1.7} />
             </button>
           </div>
@@ -217,13 +216,13 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background" />
               )}
             </Link>
-            <button onClick={toggleTheme}
+            <button onClick={toggleTheme} aria-label="Alternar tema de cores"
               className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
               {theme === "dark"
                 ? <Sun  className="h-5 w-5 text-muted-foreground" />
                 : <Moon className="h-5 w-5 text-muted-foreground" />}
             </button>
-            <button onClick={handleSignOut}
+            <button onClick={handleSignOut} aria-label="Sair da conta"
               className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center press-scale">
               <LogOut className="h-5 w-5 text-muted-foreground" strokeWidth={1.7} />
             </button>
