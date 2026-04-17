@@ -1,6 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Loader2, Dumbbell, User, Eye, EyeOff, Check, X } from "lucide-react";
@@ -8,7 +11,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { AppIcon } from "@/components/AppIcon";
 
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const signupSchema = z.object({
+  fullName: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Insira um endereço de email válido"),
+  password: z.string()
+    .min(8, "Mínimo 8 caracteres")
+    .regex(/[A-Z]/, "Pelo menos 1 letra maiúscula")
+    .regex(/\d/, "Pelo menos 1 número")
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Pelo menos 1 caractere especial"),
+  role: z.enum(["trainer", "student"]),
+});
+
+type SignupValues = z.infer<typeof signupSchema>;
 
 const passwordRules = [
   { label: "Mínimo 8 caracteres",             test: (p: string) => p.length >= 8 },
@@ -19,40 +33,41 @@ const passwordRules = [
 
 const SignupPage = () => {
   const [searchParams] = useSearchParams();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState({ name: false, email: false, password: false });
   const inviteFromUrl = searchParams.get("invite") || "";
-  const [role, setRole] = useState<"trainer" | "student">(
-    searchParams.get("role") === "student" || inviteFromUrl ? "student" : "trainer"
-  );
+  const initialRole = (searchParams.get("role") === "student" || inviteFromUrl ? "student" : "trainer") as "trainer" | "student";
+  
   const [isLoading, setIsLoading] = useState(false);
   const { signUp, user, loading } = useAuth();
   const navigate = useNavigate();
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm<SignupValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      role: initialRole,
+    },
+  });
+
+  const selectedRole = watch("role");
+  const currentPassword = useWatch({ control, name: "password" }) || "";
+
   // Já logado? Vai pro dashboard direto
   if (!loading && user) return <Navigate to="/dashboard" replace />;
 
-  const emailValid = emailRegex.test(email);
-  const passwordChecks = passwordRules.map((r) => ({ ...r, passed: r.test(password) }));
-  const passwordValid = passwordChecks.every((c) => c.passed);
-  const nameValid = name.trim().length >= 2;
-  const canSubmit = nameValid && emailValid && passwordValid;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTouched({ name: true, email: true, password: true });
-    if (!canSubmit) {
-      if (!nameValid) toast.error("Insira seu nome completo");
-      else if (!emailValid) toast.error("Insira um email válido");
-      else toast.error("Corrija a senha antes de continuar");
-      return;
-    }
+  const onSubmit = async (data: SignupValues) => {
     setIsLoading(true);
     try {
-      await signUp(email.trim().toLowerCase(), password, name.trim(), role);
+      await signUp(data.email.trim().toLowerCase(), data.password, data.fullName.trim(), data.role);
       toast.success("Conta criada! Verifique seu email para confirmar.");
       navigate("/login");
     } catch (err: any) {
@@ -62,6 +77,8 @@ const SignupPage = () => {
       setIsLoading(false);
     }
   };
+
+  const passwordChecks = passwordRules.map((r) => ({ ...r, passed: r.test(currentPassword) }));
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-y-auto">
@@ -86,8 +103,8 @@ const SignupPage = () => {
 
       {/* Right */}
       <div className="flex-1 flex items-center justify-center p-6 py-10">
-        <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="w-full max-w-sm space-y-5" noValidate>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="w-full max-w-sm space-y-5">
           <div className="lg:hidden mb-2 flex items-center gap-2">
             <AppIcon size="sm" />
             <span className="text-[13px] font-semibold tracking-tight">FitApp</span>
@@ -100,60 +117,71 @@ const SignupPage = () => {
             </p>
           </div>
 
-          {/* Role selector */}
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => setRole("trainer")}
-              className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
-                role === "trainer"
-                  ? "border-primary bg-primary/6 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/20"
-              }`}>
-              <Dumbbell className="h-5 w-5" strokeWidth={role === "trainer" ? 2 : 1.5} />
-              <span className="text-[12px] font-semibold">Personal Trainer</span>
-              <span className="text-[10px] text-muted-foreground">Gerencie alunos</span>
-            </button>
-            <button type="button" onClick={() => setRole("student")}
-              className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
-                role === "student"
-                  ? "border-[hsl(265,83%,57%)] bg-[hsl(265,83%,57%,0.06)] text-[hsl(265,83%,57%)]"
-                  : "border-border bg-card text-muted-foreground hover:border-[hsl(265,83%,57%,0.2)]"
-              }`}>
-              <User className="h-5 w-5" strokeWidth={role === "student" ? 2 : 1.5} />
-              <span className="text-[12px] font-semibold">Aluno</span>
-              <span className="text-[10px] text-muted-foreground">Acompanhe treinos</span>
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {/* Name */}
-            <div>
-              <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Nome completo</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} onBlur={() => setTouched(p => ({ ...p, name: true }))}
-                placeholder="Seu nome" className={`h-12 ${touched.name && !nameValid ? "border-risk focus-visible:ring-risk" : ""}`} />
-              {touched.name && !nameValid && <p className="text-[11px] text-risk mt-1">Insira pelo menos 2 caracteres.</p>}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+            {/* Role selector */}
+            <div className="grid grid-cols-2 gap-3">
+              <button type="button" onClick={() => setValue("role", "trainer")}
+                className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
+                  selectedRole === "trainer"
+                    ? "border-primary bg-primary/6 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/20"
+                }`}>
+                <Dumbbell className="h-5 w-5" strokeWidth={selectedRole === "trainer" ? 2 : 1.5} />
+                <span className="text-[12px] font-semibold">Personal Trainer</span>
+                <span className="text-[10px] text-muted-foreground">Gerencie alunos</span>
+              </button>
+              <button type="button" onClick={() => setValue("role", "student")}
+                className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all min-h-[80px] ${
+                  selectedRole === "student"
+                    ? "border-[hsl(265,83%,57%)] bg-[hsl(265,83%,57%,0.06)] text-[hsl(265,83%,57%)]"
+                    : "border-border bg-card text-muted-foreground hover:border-[hsl(265,83%,57%,0.2)]"
+                }`}>
+                <User className="h-5 w-5" strokeWidth={selectedRole === "student" ? 2 : 1.5} />
+                <span className="text-[12px] font-semibold">Aluno</span>
+                <span className="text-[10px] text-muted-foreground">Acompanhe treinos</span>
+              </button>
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouched(p => ({ ...p, email: true }))}
-                type="email" placeholder="seu@email.com" className={`h-12 ${touched.email && !emailValid && email ? "border-risk focus-visible:ring-risk" : ""}`} />
-              {touched.email && email && !emailValid && <p className="text-[11px] text-risk mt-1">Insira um email válido.</p>}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
-              <div className="relative">
-                <Input value={password} onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(p => ({ ...p, password: true }))}
-                  type={showPassword ? "text" : "password"} placeholder="Crie uma senha segura"
-                  className={`h-12 pr-12 ${touched.password && !passwordValid ? "border-risk focus-visible:ring-risk" : ""}`} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+            <div className="space-y-3">
+              {/* Name */}
+              <div>
+                <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Nome completo</label>
+                <Input
+                  {...register("fullName")}
+                  placeholder="Seu nome"
+                  className={`h-12 ${errors.fullName ? "border-risk focus-visible:ring-risk" : ""}`}
+                />
+                {errors.fullName && <p className="text-[11px] text-risk mt-1">{errors.fullName.message}</p>}
               </div>
-              {password.length > 0 && (
+
+              {/* Email */}
+              <div>
+                <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
+                <Input
+                  {...register("email")}
+                  type="email"
+                  placeholder="seu@email.com"
+                  className={`h-12 ${errors.email ? "border-risk focus-visible:ring-risk" : ""}`}
+                />
+                {errors.email && <p className="text-[11px] text-risk mt-1">{errors.email.message}</p>}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="text-[12px] font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
+                <div className="relative">
+                  <Input
+                    {...register("password")}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Crie uma senha segura"
+                    className={`h-12 pr-12 ${errors.password ? "border-risk focus-visible:ring-risk" : ""}`}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                
                 <div className="mt-2 space-y-1">
                   {passwordChecks.map((check) => (
                     <div key={check.label} className="flex items-center gap-1.5">
@@ -166,24 +194,25 @@ const SignupPage = () => {
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full h-12 text-[15px]">
-            {isLoading ? (
-              <><Loader2 className="h-4 w-4 animate-spin mr-2" />Criando...</>
-            ) : (
-              <>Criar conta<ArrowRight className="ml-1.5 h-4 w-4" /></>
-            )}
-          </Button>
-          <p className="text-center text-[11px] text-muted-foreground">
-            Ao criar conta, você concorda com os Termos e Política de Privacidade
-          </p>
-        </motion.form>
+            <Button type="submit" disabled={isLoading} className="w-full h-12 text-[15px]">
+              {isLoading ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Criando...</>
+              ) : (
+                <>Criar conta<ArrowRight className="ml-1.5 h-4 w-4" /></>
+              )}
+            </Button>
+            <p className="text-center text-[11px] text-muted-foreground">
+              Ao criar conta, você concorda com os Termos e Política de Privacidade
+            </p>
+          </form>
+        </motion.div>
       </div>
     </div>
   );
 };
 
 export default SignupPage;
+

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
@@ -8,33 +11,38 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { AppIcon } from "@/components/AppIcon";
 
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const MIN_PASSWORD_LEN = 6;
+const loginSchema = z.object({
+  email: z.string().email("Insira um endereço de email válido"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
-  const [email, setEmail]             = useState("");
-  const [password, setPassword]       = useState("");
-  const [showPassword, setShowPass]   = useState(false);
-  const [touched, setTouched]         = useState({ email: false, password: false });
-  const [isLoading, setIsLoading]     = useState(false);
+  const [showPassword, setShowPass] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   // Já logado? Vai pro dashboard direto
   if (!loading && user) return <Navigate to="/dashboard" replace />;
 
-  const emailValid    = emailRegex.test(email);
-  const passwordValid = password.length >= MIN_PASSWORD_LEN;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTouched({ email: true, password: true });
-    if (!emailValid)     { toast.error("Insira um email válido"); return; }
-    if (!passwordValid)  { toast.error(`A senha deve ter pelo menos ${MIN_PASSWORD_LEN} caracteres`); return; }
-
+  const onSubmit = async (data: LoginValues) => {
     setIsLoading(true);
     try {
-      await signIn(email.trim().toLowerCase(), password);
+      await signIn(data.email.trim().toLowerCase(), data.password);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast.error(
@@ -69,13 +77,11 @@ const LoginPage = () => {
 
       {/* Right — form */}
       <div className="flex-1 flex items-center justify-center p-6 py-10">
-        <motion.form
-          onSubmit={handleSubmit}
+        <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="w-full max-w-sm space-y-7"
-          noValidate
         >
           {/* Mobile logo */}
           <div className="lg:hidden mb-2 flex items-center gap-2">
@@ -91,67 +97,66 @@ const LoginPage = () => {
             </p>
           </div>
 
-          <div className="space-y-4">
-            {/* Email */}
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => setTouched(p => ({ ...p, email: true }))}
-                type="email"
-                placeholder="seu@email.com"
-                className={`h-12 ${touched.email && email && !emailValid ? "border-destructive focus-visible:ring-destructive" : ""}`}
-              />
-              {touched.email && email && !emailValid && (
-                <p className="text-[11px] text-destructive mt-1">Insira um email válido.</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
-              <div className="relative">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+            <div className="space-y-4">
+              {/* Email */}
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block uppercase tracking-wide">Email</label>
                 <Input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onBlur={() => setTouched(p => ({ ...p, password: true }))}
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className={`h-12 pr-12 ${touched.password && !passwordValid ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  {...register("email")}
+                  type="email"
+                  placeholder="seu@email.com"
+                  className={`h-12 ${errors.email ? "border-destructive focus-visible:ring-destructive" : ""}`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPassword)}
-                  className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                {errors.email && (
+                  <p className="text-[11px] text-destructive mt-1">{errors.email.message}</p>
+                )}
               </div>
-              {touched.password && !passwordValid && (
-                <p className="text-[11px] text-destructive mt-1">Mínimo {MIN_PASSWORD_LEN} caracteres.</p>
-              )}
-              <div className="flex justify-end mt-1.5">
-                <Link
-                  to="/forgot-password"
-                  className="text-[11px] text-muted-foreground hover:text-primary transition-colors font-medium"
-                >
-                  Esqueci minha senha
-                </Link>
+
+              {/* Password */}
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block uppercase tracking-wide">Senha</label>
+                <div className="relative">
+                  <Input
+                    {...register("password")}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className={`h-12 pr-12 ${errors.password ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPassword)}
+                    className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-[11px] text-destructive mt-1">{errors.password.message}</p>
+                )}
+                <div className="flex justify-end mt-1.5">
+                  <Link
+                    to="/forgot-password"
+                    className="text-[11px] text-muted-foreground hover:text-primary transition-colors font-medium"
+                  >
+                    Esqueci minha senha
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full h-13 text-[15px] py-3">
-            {isLoading
-              ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Entrando...</>
-              : <>Entrar<ArrowRight className="ml-1.5 h-4 w-4" /></>
-            }
-          </Button>
-        </motion.form>
+            <Button type="submit" disabled={isLoading} className="w-full h-13 text-[15px] py-3 mt-4">
+              {isLoading
+                ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Entrando...</>
+                : <>Entrar<ArrowRight className="ml-1.5 h-4 w-4" /></>
+              }
+            </Button>
+          </form>
+        </motion.div>
       </div>
     </div>
   );
 };
 
 export default LoginPage;
+

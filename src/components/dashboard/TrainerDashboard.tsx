@@ -171,6 +171,7 @@ export const TrainerDashboard = () => {
                     </button>
                     <button
                       onClick={() => updateStatus.mutate({ id: req.id, status: "rejected", student_id: req.student_id })}
+                      aria-label="Recusar"
                       className="w-9 h-9 shrink-0 flex items-center justify-center bg-muted hover:bg-risk/10 hover:text-risk rounded-xl transition-all press-scale">
                       <X className="h-4 w-4" />
                     </button>
