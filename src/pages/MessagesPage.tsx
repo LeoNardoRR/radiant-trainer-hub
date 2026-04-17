@@ -61,6 +61,8 @@ const MessagesPage = () => {
   const [broadcastFilter, setBroadcastFilter] = useState<"all" | "active" | "at_risk" | "inactive">("all");
   const [broadcastSending, setBroadcastSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const isNearBottom = useRef(true);
 
   const { user, role } = useAuth();
   const { canUse } = usePlan();
@@ -96,9 +98,19 @@ const MessagesPage = () => {
     }
   };
 
+  // Only auto-scroll when user is already near the bottom (don't hijack when reading history)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isNearBottom.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
+
+  // Track whether user is near the bottom of the chat
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const threshold = 120; // px from bottom
+    isNearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+  };
 
   const handleSelectConversation = (partnerId: string, name: string) => {
     setSelectedPartner(partnerId);
@@ -285,7 +297,10 @@ const MessagesPage = () => {
                     <p className="text-[10px] text-success font-body">Online</p>
                   </div>
                 </div>
-                <div className="flex-1 p-4 space-y-1 overflow-y-auto bg-muted/10">
+                <div
+                  className="flex-1 p-4 space-y-1 overflow-y-auto bg-muted/10"
+                  onScroll={handleScroll}
+                >
                   {isLoadingMessages ? (
                     <div className="space-y-4">
                       <div className="flex justify-start"><Skeleton className="h-12 w-3/4 rounded-2xl rounded-bl-md" /></div>
