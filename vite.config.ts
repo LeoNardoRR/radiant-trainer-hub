@@ -17,9 +17,11 @@ export default defineConfig(({ mode }) => ({
   react(),
   mode === "development" && componentTagger(),
   VitePWA({
-    registerType: 'autoUpdate',
+    registerType: 'prompt',
     workbox: {
       globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+      skipWaiting: true,
+      clientsClaim: true,
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/[a-z]+\.supabase\.co\/.*/i,

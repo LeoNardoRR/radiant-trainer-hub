@@ -9,21 +9,26 @@ export const useStudentAccess = () => {
   const { data: latestPayment, isLoading } = useQuery({
     queryKey: ["student-access", user?.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("payments" as any)
-        .select("id, status, due_date, amount, payment_plans(name)")
-        .eq("student_id", user!.id)
-        .order("due_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data as any;
+      try {
+        const { data } = await supabase
+          .from("payments" as any)
+          .select("id, status, due_date, amount, payment_plans(name)")
+          .eq("student_id", user!.id)
+          .order("due_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return (data as any) ?? null;
+      } catch {
+        return null;
+      }
     },
     enabled: !!user && role === "student",
     staleTime: 1000 * 60 * 5,
+    retry: false,
   });
 
-  // If no payment exists at all → full access (trainer hasn't billed yet)
-  if (!latestPayment && !isLoading) {
+  // Guard: while loading or not a student, return safe defaults
+  if (isLoading || !latestPayment) {
     return { hasActivePayment: true, isOverdue: false, latestPayment: null, isLoading };
   }
 
@@ -33,7 +38,7 @@ export const useStudentAccess = () => {
       latestPayment?.due_date < new Date().toISOString().split("T")[0]);
 
   const hasActivePayment =
-    !latestPayment ||              // no record → free pass
+    !latestPayment ||
     latestPayment.status === "paid" ||
     latestPayment.status === "pending";
 
