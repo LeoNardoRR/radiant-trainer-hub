@@ -18,7 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 /* ── Nav config ──────────────────────────────────────────── */
 const TRAINER_SIDEBAR = [
-  { icon: LayoutDashboard, label: "Dashboard",    path: "/dashboard" },
+  { icon: Activity,        label: "Dashboard",    path: "/dashboard" },
   { icon: CalendarDays,    label: "Agenda",        path: "/schedule" },
   { icon: Users,           label: "Alunos",        path: "/students" },
   { icon: Dumbbell,        label: "Treinos",       path: "/workouts" },
@@ -30,7 +30,7 @@ const TRAINER_SIDEBAR = [
   { icon: Settings,        label: "Ajustes",       path: "/settings" },
 ];
 const STUDENT_SIDEBAR = [
-  { icon: LayoutDashboard, label: "Dashboard",    path: "/dashboard" },
+  { icon: Activity,        label: "Dashboard",    path: "/dashboard" },
   { icon: CalendarDays,    label: "Aulas",         path: "/schedule" },
   { icon: Dumbbell,        label: "Treinos",       path: "/workouts" },
   { icon: TrendingUp,      label: "Progresso",     path: "/progress" },
@@ -40,14 +40,14 @@ const STUDENT_SIDEBAR = [
 ];
 
 const TRAINER_BOTTOM = [
-  { icon: LayoutDashboard, label: "Início",   path: "/dashboard" },
+  { icon: Activity,        label: "Início",   path: "/dashboard" },
   { icon: CalendarDays,    label: "Agenda",    path: "/schedule" },
   { icon: Dumbbell,        label: "Treinos",   path: "/workouts" },
   { icon: MessageSquare,   label: "Chat",      path: "/messages" },
   { icon: Users,           label: "Alunos",    path: "/students" },
 ];
 const STUDENT_BOTTOM = [
-  { icon: LayoutDashboard, label: "Início",    path: "/dashboard" },
+  { icon: Activity,        label: "Início",    path: "/dashboard" },
   { icon: CalendarDays,    label: "Aulas",      path: "/schedule" },
   { icon: Dumbbell,        label: "Treinos",    path: "/workouts" },
   { icon: TrendingUp,      label: "Progresso",  path: "/progress" },
