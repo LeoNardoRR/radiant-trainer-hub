@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .from("trainer_subscriptions" as any)
             .select("plan_tier")
             .eq("trainer_id", userId)
-            .single();
+            .maybeSingle();
           setPlanTier(((sub as any)?.plan_tier as PlanTier) ?? "starter");
         } catch {
           setPlanTier("starter");

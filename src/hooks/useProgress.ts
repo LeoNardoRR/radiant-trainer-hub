@@ -11,20 +11,25 @@ export const useBodyMeasurements = (studentId?: string) => {
   return useQuery({
     queryKey: ["body-measurements", targetId],
     queryFn: async () => {
-      let query = supabase
-        .from("body_measurements" as any)
-        .select("*")
-        .order("measured_at", { ascending: false });
+      try {
+        let query = supabase
+          .from("body_measurements" as any)
+          .select("*")
+          .order("measured_at", { ascending: false });
 
-      if (targetId) {
-        query = query.eq("student_id", targetId);
+        if (targetId) {
+          query = query.eq("student_id", targetId);
+        }
+
+        const { data, error } = await query;
+        if (error) return []; // table may not exist yet
+        return (data as any[]) ?? [];
+      } catch {
+        return [];
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as any[];
     },
     enabled: !!user,
+    retry: false,
   });
 };
 
@@ -48,7 +53,7 @@ export const useCreateBodyMeasurement = () => {
     }) => {
       const { data, error } = await supabase
         .from("body_measurements" as any)
-        .insert({ ...measurement, trainer_id: user?.id })
+        .insert({ ...measurement })
         .select()
         .single();
       if (error) throw error;
@@ -56,6 +61,7 @@ export const useCreateBodyMeasurement = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["body-measurements"] });
+      qc.invalidateQueries({ queryKey: ["weight-history"] });
       toast.success("Medidas registradas!");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -106,20 +112,25 @@ export const useWeightHistory = (studentId?: string) => {
   return useQuery({
     queryKey: ["weight-history", targetId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("body_measurements" as any)
-        .select("measured_at, weight_kg, body_fat_pct")
-        .eq("student_id", targetId!)
-        .not("weight_kg", "is", null)
-        .order("measured_at", { ascending: true })
-        .limit(30);
-      if (error) throw error;
-      return (data as any[]).map((d: any) => ({
-        date: d.measured_at,
-        weight: Number(d.weight_kg),
-        fat: d.body_fat_pct ? Number(d.body_fat_pct) : undefined,
-      }));
+      try {
+        const { data, error } = await supabase
+          .from("body_measurements" as any)
+          .select("measured_at, weight_kg, body_fat_pct")
+          .eq("student_id", targetId!)
+          .not("weight_kg", "is", null)
+          .order("measured_at", { ascending: true })
+          .limit(30);
+        if (error) return [];
+        return ((data as any[]) ?? []).map((d: any) => ({
+          date: d.measured_at,
+          weight: Number(d.weight_kg),
+          fat: d.body_fat_pct ? Number(d.body_fat_pct) : undefined,
+        }));
+      } catch {
+        return [];
+      }
     },
     enabled: !!targetId,
+    retry: false,
   });
 };

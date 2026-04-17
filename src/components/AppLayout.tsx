@@ -127,7 +127,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const sidebarBdr = theme === "dark" ? "#15102a" : "#2d1a5c";
 
   return (
-    <div className="h-[100dvh] bg-background flex overflow-hidden">
+    <div
+      className="bg-background flex overflow-hidden"
+      style={{ height: "100dvh", maxHeight: "-webkit-fill-available" }}
+    >
       <OfflineBanner />
 
       {/* ═══ DESKTOP SIDEBAR ════════════════════════════════ */}
@@ -291,8 +294,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* ═══ MAIN CONTENT — scrolls independently ═══════════════ */}
       <main
-        className="flex-1 lg:ml-[230px] overflow-y-auto"
+        className="flex-1 lg:ml-[230px] overflow-y-auto scroll-smooth"
         style={{
+          WebkitOverflowScrolling: "touch",
           paddingTop: "calc(56px + env(safe-area-inset-top))",
           paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 2rem)`,
         }}>
