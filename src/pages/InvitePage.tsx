@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 const InvitePage = () => {
   const { code } = useParams<{ code: string }>();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Pequeno delay para mostrar a animação de boas-vindas
