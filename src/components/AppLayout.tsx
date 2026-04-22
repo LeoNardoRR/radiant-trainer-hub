@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, CalendarDays, Users, Bell, BarChart3,
   MessageSquare, Settings, LogOut, Moon, Sun,
-  Dumbbell, TrendingUp, DollarSign, Camera, Activity
+  Dumbbell, TrendingUp, DollarSign, Camera, Activity, Shield
 } from "lucide-react";
 import { useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +38,12 @@ const STUDENT_SIDEBAR = [
   { icon: Bell,            label: "Notificações",  path: "/notifications" },
   { icon: Settings,        label: "Ajustes",       path: "/settings" },
 ];
+const ADMIN_SIDEBAR = [
+  { icon: Shield,          label: "Admin",         path: "/admin" },
+  { icon: Users,           label: "Trainers",      path: "/admin" },
+  { icon: DollarSign,      label: "Pagamentos",    path: "/admin" },
+  { icon: Settings,        label: "Ajustes",       path: "/settings" },
+];
 
 const TRAINER_BOTTOM = [
   { icon: Activity,        label: "Início",   path: "/dashboard" },
@@ -52,6 +58,10 @@ const STUDENT_BOTTOM = [
   { icon: Dumbbell,        label: "Treinos",    path: "/workouts" },
   { icon: TrendingUp,      label: "Progresso",  path: "/progress" },
   { icon: MessageSquare,   label: "Chat",       path: "/messages" },
+];
+const ADMIN_BOTTOM = [
+  { icon: Shield,          label: "Admin",      path: "/admin" },
+  { icon: Settings,        label: "Ajustes",    path: "/settings" },
 ];
 
 /* ── Avatar ──────────────────────────────────────────────── */
@@ -110,8 +120,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { data: notifications }          = useNotifications();
 
   const isStudent  = role === "student";
-  const sidebarNav = isStudent ? STUDENT_SIDEBAR : TRAINER_SIDEBAR;
-  const bottomNav  = isStudent ? STUDENT_BOTTOM  : TRAINER_BOTTOM;
+  const isAdmin    = role === "admin";
+  const sidebarNav = isAdmin ? ADMIN_SIDEBAR : isStudent ? STUDENT_SIDEBAR : TRAINER_SIDEBAR;
+  const bottomNav  = isAdmin ? ADMIN_BOTTOM  : isStudent ? STUDENT_BOTTOM  : TRAINER_BOTTOM;
   const unread     = notifications?.filter(n => !n.is_read).length ?? 0;
   const handleSignOut = async () => { await signOut(); navigate("/"); };
 

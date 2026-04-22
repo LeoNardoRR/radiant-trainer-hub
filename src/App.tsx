@@ -30,6 +30,7 @@ import ProgressPage from "./pages/ProgressPage";
 import PaymentsPage from "./pages/PaymentsPage";
 import InvitePage from "./pages/InvitePage";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/AdminPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -149,6 +150,7 @@ const AppRoutes = () => {
         <Route path="/workouts"     element={<ProtectedRoute><PageWrap><WorkoutsRouter /></PageWrap></ProtectedRoute>} />
         <Route path="/progress"     element={<ProtectedRoute><PageWrap><ProgressPage /></PageWrap></ProtectedRoute>} />
         <Route path="/payments"     element={<ProtectedRoute><PageWrap><PaymentsPage /></PageWrap></ProtectedRoute>} />
+        <Route path="/admin"        element={<ProtectedRoute><PageWrap><AdminPage /></PageWrap></ProtectedRoute>} />
         <Route path="*"             element={<PageWrap><NotFound /></PageWrap>} />
       </Routes>
     </AnimatePresence>

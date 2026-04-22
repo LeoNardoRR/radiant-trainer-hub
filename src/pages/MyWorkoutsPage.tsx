@@ -214,7 +214,8 @@ const MyWorkoutsPage = () => {
         {showFeedback && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowFeedback(null)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl overflow-y-auto"
+              style={{ maxHeight: "90dvh", paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-2">
                 <p className="font-bold text-base">Treino Concluído! 💪</p>

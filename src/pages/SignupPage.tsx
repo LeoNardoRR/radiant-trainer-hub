@@ -83,9 +83,9 @@ const SignupPage = () => {
   const passwordChecks = passwordRules.map((r) => ({ ...r, passed: r.test(currentPassword) }));
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-y-auto">
+    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
       {/* Left */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/6 via-primary/3 to-background items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/6 via-primary/3 to-background items-center justify-center p-12 shrink-0">
         <div className="max-w-sm">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="flex items-center gap-2.5 mb-10">
@@ -103,9 +103,9 @@ const SignupPage = () => {
       </div>
 
       {/* Right */}
-      <div className="flex-1 flex items-center justify-center p-6 py-10">
+      <div className="flex-1 flex items-start justify-center p-6 py-10 min-h-[100dvh]">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="w-full max-w-sm space-y-5">
+          className="w-full max-w-sm space-y-5 my-auto">
           {isSuccess ? (
             <div className="text-center space-y-6 py-4">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">

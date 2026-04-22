@@ -129,8 +129,34 @@ const PaymentsPage = () => {
   const createPlan = useCreatePaymentPlan();
   const deletePlan = useDeletePaymentPlan();
 
-  const filteredPayments = (isTrainer ? payments || [] : myPayments || []).filter((p: any) =>
-    statusFilter === "all" || p.status === statusFilter
+  const deletePayment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("payments" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["payments"] }); toast.success("Cobrança removida."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const allPayments = isTrainer ? payments || [] : myPayments || [];
+  const today = new Date().toISOString().split("T")[0];
+
+  // Normalize: pending past due_date => treated as overdue for display/filter
+  const normalizedPayments = allPayments.map((p: any) => ({
+    ...p,
+    _displayStatus: p.status === "pending" && p.due_date < today ? "overdue" : p.status,
+  }));
+
+  const statusCounts = {
+    all: normalizedPayments.length,
+    pending: normalizedPayments.filter((p: any) => p._displayStatus === "pending").length,
+    paid: normalizedPayments.filter((p: any) => p._displayStatus === "paid").length,
+    overdue: normalizedPayments.filter((p: any) => p._displayStatus === "overdue").length,
+    cancelled: normalizedPayments.filter((p: any) => p._displayStatus === "cancelled").length,
+  };
+
+  const filteredPayments = normalizedPayments.filter((p: any) =>
+    statusFilter === "all" || p._displayStatus === statusFilter
   );
 
   const handleCreatePayment = async () => {
@@ -230,19 +256,30 @@ const PaymentsPage = () => {
         {/* ── TAB: Cobranças ─────────────────────────── */}
         {(tab === "payments" || !isTrainer) && (
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="space-y-4">
-            {/* Status filters */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            {/* Status filters with counters */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {[
                 { key: "all", label: "Todos" },
                 { key: "pending", label: "Pendente" },
                 { key: "paid", label: "Pago" },
                 { key: "overdue", label: "Atrasado" },
-              ].map((f) => (
-                <button key={f.key} onClick={() => setStatusFilter(f.key)}
-                  className={`px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all min-h-[36px] ${statusFilter === f.key ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:border-primary/30"}`}>
-                  {f.label}
-                </button>
-              ))}
+                { key: "cancelled", label: "Cancelado" },
+              ].map((f) => {
+                const count = statusCounts[f.key as keyof typeof statusCounts];
+                return (
+                  <button key={f.key} onClick={() => setStatusFilter(f.key)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all min-h-[36px] shrink-0 ${
+                      statusFilter === f.key ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:border-primary/30"
+                    }`}>
+                    {f.label}
+                    {count > 0 && (
+                      <span className={`text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-black px-1 ${
+                        statusFilter === f.key ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                      }`}>{count}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {isLoading ? (
@@ -292,16 +329,28 @@ const PaymentsPage = () => {
                             {dsc.label}
                           </span>
                           {isTrainer && payment.status !== "paid" && payment.status !== "cancelled" && (
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 flex-wrap justify-end">
                               <button onClick={() => updateStatus.mutate({ id: payment.id, status: "paid", student_id: payment.student_id })}
                                 className="text-[10px] bg-success/10 text-success border border-success/20 px-2.5 py-1.5 rounded-lg hover:bg-success hover:text-success-foreground transition-colors font-semibold min-h-[28px]">
                                 ✓ Pago
                               </button>
+                              {payment._displayStatus !== "overdue" && (
+                                <button onClick={() => updateStatus.mutate({ id: payment.id, status: "overdue", student_id: payment.student_id })}
+                                  className="text-[10px] bg-risk/10 text-risk border border-risk/20 px-2 py-1.5 rounded-lg hover:bg-risk hover:text-white transition-colors font-semibold min-h-[28px]">
+                                  Atrasar
+                                </button>
+                              )}
                               <button onClick={() => updateStatus.mutate({ id: payment.id, status: "cancelled", student_id: payment.student_id })}
                                 className="text-[10px] bg-muted text-muted-foreground border border-border px-2.5 py-1.5 rounded-lg hover:bg-risk/10 hover:text-risk transition-colors font-semibold min-h-[28px]">
                                 ✗
                               </button>
                             </div>
+                          )}
+                          {isTrainer && (
+                            <button onClick={() => { if (confirm("Remover cobrança?")) deletePayment.mutate(payment.id); }}
+                              className="p-1 hover:bg-risk/10 rounded-lg transition-colors">
+                              <Trash2 className="h-3.5 w-3.5 text-risk/60 hover:text-risk" />
+                            </button>
                           )}
                           {payment.status === "paid" && payment.paid_at && (
                             <p className="text-[10px] text-muted-foreground">Pago em {format(new Date(payment.paid_at), "dd/MM", { locale: ptBR })}</p>
@@ -472,6 +521,7 @@ const PaymentsPage = () => {
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowNewPlan(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
               className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
+              style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <p className="font-bold text-base">Novo Plano</p>
@@ -566,7 +616,50 @@ const PaymentsPage = () => {
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">FINANCEIRO</p>
             <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Meus Pagamentos</h1>
           </motion.div>
-          {/* Student payments list rendered by the existing filteredPayments logic above */}
+          {isLoading ? (
+            <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-muted/50 rounded-2xl animate-pulse" />)}</div>
+          ) : !myPayments || myPayments.length === 0 ? (
+            <div className="text-center py-16 bg-card border border-border rounded-2xl">
+              <DollarSign className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+              <p className="font-semibold text-sm">Nenhum pagamento encontrado</p>
+              <p className="text-xs text-muted-foreground mt-1">Seus pagamentos aparecerão aqui.</p>
+            </div>
+          ) : (
+            <div className="space-y-2 pb-6">
+              {(myPayments as any[]).map((payment: any, i: number) => {
+                const sc = statusConfig[payment.status as keyof typeof statusConfig] || statusConfig.pending;
+                const StatusIcon = sc.icon;
+                return (
+                  <motion.div key={payment.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                    className="bg-card border border-border rounded-2xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-11 h-11 rounded-xl ${sc.bg} flex items-center justify-center shrink-0`}>
+                        <StatusIcon className={`h-5 w-5 ${sc.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-base">R$ {Number(payment.amount).toFixed(2)}</p>
+                          {payment.payment_plans?.name && (
+                            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">{payment.payment_plans.name}</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Vencimento: {format(parseISO(payment.due_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {payment.reference_month && ` · Ref: ${payment.reference_month}`}
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${sc.bg} ${sc.color} shrink-0`}>
+                        {sc.label}
+                      </span>
+                    </div>
+                    {payment.notes && (
+                      <p className="text-xs text-muted-foreground mt-2 ml-14 italic">{payment.notes}</p>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </AppLayout>
