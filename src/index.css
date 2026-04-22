@@ -255,5 +255,10 @@
 /* ── Minimal scrollbar ──────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(var(--primary) / 0.2); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary) / 0.4); }
+::-webkit-scrollbar-thumb { 
+  background: hsl(var(--primary) / 0.4); 
+  border-radius: 99px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary) / 0.6); }

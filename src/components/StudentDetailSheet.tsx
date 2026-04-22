@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X, Calendar, TrendingUp, AlertTriangle, Activity, Flame, Target,
+  X, Calendar, TrendingUp, AlertTriangle, Clock, Flame, Target,
   Zap, Edit3, Dumbbell, DollarSign, MessageSquare, Save, Loader2,
   Phone, Mail, User, ChevronDown,
 } from "lucide-react";
@@ -125,8 +125,12 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 80 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="relative bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-y-auto"
-            style={{ maxHeight: "90dvh", paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+            className="relative bg-background border border-border w-full sm:max-w-md rounded-2xl shadow-2xl overflow-y-auto"
+            style={{ 
+              maxHeight: "82dvh", 
+              paddingBottom: "100px",
+              overscrollBehavior: "contain"
+            }}
           >
             {/* ── Header ── */}
             <div className="p-5 pb-3 flex items-start gap-4">
@@ -300,7 +304,7 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
                 {stats?.daysSinceLastSession != null && (
                   <div className="mx-5 p-3 rounded-xl bg-muted/50 border border-border">
                     <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+                      <Clock className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
                       <span className="text-xs text-muted-foreground">
                         Última sessão:{" "}
                         <strong className="text-foreground">

@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, CalendarDays, Users, Bell, BarChart3,
   MessageSquare, Settings, LogOut, Moon, Sun,
-  Dumbbell, TrendingUp, DollarSign, Camera, Activity, Shield
+  Dumbbell, TrendingUp, DollarSign, Camera, Zap, Shield
 } from "lucide-react";
 import { useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,7 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 /* ── Nav config ──────────────────────────────────────────── */
 const TRAINER_SIDEBAR = [
-  { icon: Activity,        label: "Dashboard",    path: "/dashboard" },
+  { icon: Zap,             label: "Dashboard",    path: "/dashboard" },
   { icon: CalendarDays,    label: "Agenda",        path: "/schedule" },
   { icon: Users,           label: "Alunos",        path: "/students" },
   { icon: Dumbbell,        label: "Treinos",       path: "/workouts" },
@@ -30,7 +30,7 @@ const TRAINER_SIDEBAR = [
   { icon: Settings,        label: "Ajustes",       path: "/settings" },
 ];
 const STUDENT_SIDEBAR = [
-  { icon: Activity,        label: "Dashboard",    path: "/dashboard" },
+  { icon: Zap,             label: "Dashboard",    path: "/dashboard" },
   { icon: CalendarDays,    label: "Aulas",         path: "/schedule" },
   { icon: Dumbbell,        label: "Treinos",       path: "/workouts" },
   { icon: TrendingUp,      label: "Progresso",     path: "/progress" },
@@ -46,14 +46,14 @@ const ADMIN_SIDEBAR = [
 ];
 
 const TRAINER_BOTTOM = [
-  { icon: Activity,        label: "Início",   path: "/dashboard" },
+  { icon: Zap,             label: "Início",   path: "/dashboard" },
   { icon: CalendarDays,    label: "Agenda",    path: "/schedule" },
   { icon: Dumbbell,        label: "Treinos",   path: "/workouts" },
   { icon: MessageSquare,   label: "Chat",      path: "/messages" },
   { icon: Users,           label: "Alunos",    path: "/students" },
 ];
 const STUDENT_BOTTOM = [
-  { icon: Activity,        label: "Início",    path: "/dashboard" },
+  { icon: Zap,             label: "Início",    path: "/dashboard" },
   { icon: CalendarDays,    label: "Aulas",      path: "/schedule" },
   { icon: Dumbbell,        label: "Treinos",    path: "/workouts" },
   { icon: TrendingUp,      label: "Progresso",  path: "/progress" },

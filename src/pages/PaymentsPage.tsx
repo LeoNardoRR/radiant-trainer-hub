@@ -457,10 +457,14 @@ const PaymentsPage = () => {
       {/* ── Modal: Nova Cobrança ──────────────────── */}
       <AnimatePresence>
         {showNewPayment && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowNewPayment(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm p-4" onClick={() => setShowNewPayment(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
-              style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+              className="bg-background border border-border rounded-2xl p-6 w-full sm:max-w-md shadow-2xl overflow-y-auto"
+              style={{ 
+                maxHeight: '82dvh',
+                paddingBottom: '100px',
+                overscrollBehavior: 'contain'
+              }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <p className="font-bold text-base">Nova Cobrança</p>
@@ -518,10 +522,14 @@ const PaymentsPage = () => {
       {/* ── Modal: Novo Plano ──────────────────────── */}
       <AnimatePresence>
         {showNewPlan && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowNewPlan(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm p-4" onClick={() => setShowNewPlan(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
-              style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+              className="bg-background border border-border rounded-2xl p-6 w-full sm:max-w-md shadow-2xl overflow-y-auto"
+              style={{ 
+                maxHeight: '82dvh',
+                paddingBottom: '100px',
+                overscrollBehavior: 'contain'
+              }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-5">
                 <p className="font-bold text-base">Novo Plano</p>
@@ -561,11 +569,15 @@ const PaymentsPage = () => {
       {/* ── Modal: Atribuir Plano a Aluno ────────── */}
       <AnimatePresence>
         {showAssign && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowAssign(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm p-4" onClick={() => setShowAssign(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
+              className="bg-background border border-border rounded-2xl w-full sm:max-w-md shadow-2xl overflow-y-auto"
+              style={{ 
+                maxHeight: '82dvh',
+                overscrollBehavior: 'contain'
+              }}
               onClick={(e) => e.stopPropagation()}>
-              <div className="p-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+              <div className="p-6" style={{ paddingBottom: '100px' }}>
                 <div className="flex items-center justify-between mb-5">
                   <p className="font-bold text-base">Atribuir Plano</p>
                   <button onClick={() => setShowAssign(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
