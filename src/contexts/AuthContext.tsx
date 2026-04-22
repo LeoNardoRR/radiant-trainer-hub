@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Skip if already fetching for this user
     if (fetchingRef.current === userId) return;
     fetchingRef.current = userId;
+    setLoading(true);
 
     try {
       const [profileRes, roleRes] = await Promise.all([
@@ -113,7 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: AppRole) => {

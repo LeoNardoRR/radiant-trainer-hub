@@ -142,7 +142,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex items-center gap-2.5 px-5 py-5">
           <Link to="/dashboard" className="flex items-center gap-2.5">
             <AppIcon size="sm" />
-            <span className="text-white/90 font-bold text-[15px]">FitApp</span>
           </Link>
         </div>
 
@@ -205,10 +204,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-2.5">
             <Avatar src={profile?.avatar_url} name={profile?.full_name} size={8} clickable onUpload={handleAvatarUpload} />
             <div>
-              <p className="font-bold text-[13px] leading-none">
-                {profile?.full_name?.split(" ")[0] ?? "FitApp"}
-              </p>
-              <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{role}</p>
+              {profile?.full_name ? (
+                <>
+                  <p className="font-bold text-[13px] leading-none">{profile.full_name.split(" ")[0]}</p>
+                  <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{role}</p>
+                </>
+              ) : (
+                <AppIcon size="sm" />
+              )}
             </div>
           </div>
 

@@ -39,7 +39,6 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between h-14">
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <AppIcon size="sm" />
-            <span className="text-[13px] font-display font-semibold tracking-tight hidden xs:inline">FitApp</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">Recursos</a>
@@ -238,7 +237,6 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <AppIcon size="sm" className="w-6 h-6 rounded-lg" />
-            <span className="text-[13px] font-display font-semibold tracking-tight">FitApp</span>
           </div>
           <p className="text-[12px] text-muted-foreground">© 2026 FitApp. Todos os direitos reservados.</p>
           <div className="flex gap-6">

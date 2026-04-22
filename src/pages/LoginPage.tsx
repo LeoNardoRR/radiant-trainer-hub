@@ -62,7 +62,6 @@ const LoginPage = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="flex items-center gap-2.5 mb-10">
             <AppIcon size="md" />
-            <span className="text-[15px] font-bold tracking-tight">FitApp</span>
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }}
             className="font-black text-4xl tracking-tight leading-[1.1] mb-3">
@@ -86,7 +85,6 @@ const LoginPage = () => {
           {/* Mobile logo */}
           <div className="lg:hidden mb-2 flex items-center gap-2">
             <AppIcon size="sm" />
-            <span className="text-[13px] font-bold tracking-tight">FitApp</span>
           </div>
 
           <div>

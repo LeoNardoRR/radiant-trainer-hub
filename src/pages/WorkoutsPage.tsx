@@ -14,6 +14,10 @@ import {
 } from "@/hooks/useWorkouts";
 import { useStudents } from "@/hooks/useStudents";
 
+type ExerciseType = { id: string; name: string; muscle_group: string; description?: string; is_default?: boolean };
+type WorkoutExerciseType = { id: string; exercise_name: string; sets: string | number; reps: string | number; load_kg?: number; rest_seconds: number; notes?: string; order_index: number };
+type WorkoutPlanType = { id: string; name: string; is_active: boolean; student?: { full_name: string }; workout_exercises?: WorkoutExerciseType[] };
+
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] } }),
@@ -90,7 +94,7 @@ const WorkoutsPage = () => {
       load_kg: exLoad ? Number(exLoad) : undefined,
       rest_seconds: Number(exRest) || 60,
       notes: exNotes || undefined,
-      order_index: plans?.find((p: any) => p.id === showAddExercise)?.workout_exercises?.length || 0,
+      order_index: plans?.find((p: WorkoutPlanType) => p.id === showAddExercise)?.workout_exercises?.length || 0,
     });
     setShowAddExercise(null);
     setSelectedExId(""); setExSets("3"); setExReps("12"); setExLoad(""); setExRest("60"); setExNotes(""); setAddExSearch("");
@@ -146,7 +150,7 @@ const WorkoutsPage = () => {
                 <p className="text-xs text-muted-foreground mt-1">Crie a primeira ficha de treino para um aluno.</p>
               </div>
             ) : (
-              plans.map((plan: any, i: number) => {
+              plans.map((plan: WorkoutPlanType, i: number) => {
                 const isExpanded = expandedPlan === plan.id;
                 const exercises = plan.workout_exercises || [];
                 return (
@@ -193,8 +197,8 @@ const WorkoutsPage = () => {
                             ) : (
                               exercises
                                 .slice()
-                                .sort((a: any, b: any) => a.order_index - b.order_index)
-                                .map((ex: any, idx: number) => (
+                                .sort((a: WorkoutExerciseType, b: WorkoutExerciseType) => a.order_index - b.order_index)
+                                .map((ex: WorkoutExerciseType, idx: number) => (
                                   <div key={ex.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl border border-border/50">
                                     <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                                       <span className="text-[10px] font-bold text-primary">{idx + 1}</span>
@@ -273,7 +277,7 @@ const WorkoutsPage = () => {
             ) : filterMuscle !== "Todos" ? (
               /* Single group — just a flat list */
               <div className="space-y-2">
-                {filteredExercises.map((ex: any, i: number) => (
+                {filteredExercises.map((ex: ExerciseType, i: number) => (
                   <motion.div key={ex.id}
                     initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.02 }}
@@ -296,8 +300,8 @@ const WorkoutsPage = () => {
             ) : (
               /* All groups — sectioned by muscle group */
               (() => {
-                const grouped = muscleGroups.reduce((acc: Record<string, any[]>, mg) => {
-                  const items = filteredExercises.filter((ex: any) => ex.muscle_group === mg);
+                const grouped = muscleGroups.reduce((acc: Record<string, ExerciseType[]>, mg) => {
+                  const items = filteredExercises.filter((ex: ExerciseType) => ex.muscle_group === mg);
                   if (items.length > 0) acc[mg] = items;
                   return acc;
                 }, {});
@@ -308,7 +312,7 @@ const WorkoutsPage = () => {
                       <div key={group}>
                         <p className="label-overline mb-2">{group}</p>
                         <div className="space-y-1.5">
-                          {items.map((ex: any, i: number) => (
+                          {items.map((ex: ExerciseType, i: number) => (
                             <motion.div key={ex.id}
                               initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: i * 0.02 }}
@@ -399,7 +403,7 @@ const WorkoutsPage = () => {
                     <Input value={addExSearch} onChange={(e) => setAddExSearch(e.target.value)} placeholder="Buscar..." className="pl-10 h-10 rounded-xl" />
                   </div>
                   <div className="grid grid-cols-1 gap-1 max-h-[140px] overflow-y-auto">
-                    {addExFiltered.map((ex: any) => (
+                    {addExFiltered.map((ex: ExerciseType) => (
                       <button key={ex.id} onClick={() => setSelectedExId(ex.id)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left text-sm transition-all ${selectedExId === ex.id ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-accent"}`}>
                         <span className="flex-1 truncate font-medium">{ex.name}</span>

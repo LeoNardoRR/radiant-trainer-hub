@@ -177,7 +177,7 @@ export const useUpdateSessionStatus = () => {
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split("T")[0];
-            let newStreak = existingStreak.last_workout_date === yesterdayStr
+            const newStreak = existingStreak.last_workout_date === yesterdayStr
               ? existingStreak.current_streak + 1
               : existingStreak.last_workout_date === today
               ? existingStreak.current_streak

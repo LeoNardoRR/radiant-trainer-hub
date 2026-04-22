@@ -8,6 +8,7 @@ import { useUserStreak, useUserBadges, useLeaderboard } from "@/hooks/useGamific
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const stagger = {
   hidden: {},

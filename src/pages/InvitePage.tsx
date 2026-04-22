@@ -42,7 +42,7 @@ const InvitePage = () => {
           Você foi convidado!
         </h1>
         <p className="text-muted-foreground text-sm leading-relaxed max-w-[260px]">
-          Seu personal te convidou para o FitApp. Criando sua conta em segundos…
+          Seu personal te convidou. Criando sua conta em segundos…
         </p>
       </motion.div>
 

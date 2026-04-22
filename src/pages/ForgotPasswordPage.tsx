@@ -48,7 +48,6 @@ const ForgotPasswordPage = () => {
         {/* Logo */}
         <div className="flex items-center gap-2 mb-10">
           <AppIcon size="sm" />
-          <span className="text-[13px] font-bold tracking-tight">FitApp</span>
         </div>
 
         {sent ? (
