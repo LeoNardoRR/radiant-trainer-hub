@@ -308,18 +308,24 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* ═══ MAIN CONTENT — scrolls independently ═══════════════ */}
       <main
-        className="flex-1 lg:ml-[230px] overflow-y-auto overflow-x-hidden scroll-smooth"
+        className="flex-1 lg:ml-[230px] overflow-y-auto overflow-x-hidden"
         style={{
+          /* On mobile: full dvh minus nothing — padding handles header+nav offsets */
           height: "100dvh",
+          /* iOS momentum scrolling */
           WebkitOverflowScrolling: "touch",
+          /* Push content below the fixed mobile header (56px + safe-area-top) */
           paddingTop: "calc(56px + env(safe-area-inset-top))",
-          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 2rem)`,
-        }}>
-        <div className="px-4 py-6 md:px-8 lg:p-10 max-w-7xl mx-auto lg:pt-10 lg:pb-12 min-h-full flex flex-col">
+          /* Push content above the fixed bottom nav + safe-area + a bit of breathing room */
+          paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom) + 1.5rem)`,
+        }}
+      >
+        {/* On desktop, remove the mobile header/nav offsets */}
+        <div className="px-4 py-5 md:px-8 lg:px-10 lg:py-10 lg:pt-10 lg:pb-12 max-w-7xl mx-auto"
+          style={{ paddingTop: undefined }}
+        >
           <StudentPaymentBanner />
-          <div className="flex-1">
-            {children}
-          </div>
+          {children}
         </div>
       </main>
     </div>

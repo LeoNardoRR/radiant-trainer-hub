@@ -105,7 +105,9 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-    /* Do NOT set height/overflow here — AppLayout owns the viewport frame */
+    /* Lock html — AppLayout main owns all scrolling */
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
@@ -113,12 +115,12 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* overscroll-behavior on body alone is sufficient to prevent pull-to-refresh on iOS */
     overscroll-behavior-y: none;
     touch-action: manipulation;
-    /* min-height covers public pages (landing, login) that don't use AppLayout */
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
+    /* Lock body too — no double scrolling */
+    height: 100%;
+    overflow: hidden;
+    /* Public pages (landing/login) rely on min-height on their own containers */
   }
 
   h1, h2, h3, h4, h5, h6 {
