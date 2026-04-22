@@ -531,13 +531,14 @@ const SchedulePage = () => {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowModal(false)}>
             <motion.div
             initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
-            className="bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl flex flex-col"
+            className="bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-y-auto"
             style={{ 
-              maxHeight: "92dvh",
+              maxHeight: "88dvh",
+              overscrollBehavior: "contain"
             }}
             onClick={e => e.stopPropagation()}>
-            <div className="p-5 space-y-5 overflow-y-auto flex-1"
-              style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
+            <div className="p-5 space-y-5"
+              style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}>
               {/* Handle */}
               <div className="w-10 h-1 rounded-full bg-muted mx-auto sm:hidden" />
               <div className="flex items-center justify-between">
