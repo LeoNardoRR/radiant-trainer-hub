@@ -1,4 +1,4 @@
-import { Activity } from "lucide-react";
+import { Zap } from "lucide-react";
 
 interface AppIconProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -22,10 +22,10 @@ export const AppIcon = ({ size = "md", className = "" }: AppIconProps) => {
 
   return (
     <div 
-      className={`overflow-hidden flex items-center justify-center shadow-sm shrink-0 ${sizeClasses[size]} ${className}`} 
-      style={{ background: "linear-gradient(135deg, #7c3aed, #3b82f6)" }}
+      className={`overflow-hidden flex items-center justify-center shadow-lg shrink-0 ${sizeClasses[size]} ${className}`} 
+      style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
     >
-      <Activity className={`text-white ${iconSizes[size]}`} strokeWidth={2.5} />
+      <Zap className={`text-white fill-white ${iconSizes[size]}`} strokeWidth={2} />
     </div>
   );
 };

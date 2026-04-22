@@ -345,8 +345,9 @@ const WorkoutsPage = () => {
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowNewPlan(false)}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
               className="bg-background border border-border rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
+              style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
               onClick={(e) => e.stopPropagation()}>
-              <div className="p-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+              <div className="p-6">
                 <div className="flex items-center justify-between mb-5">
                   <p className="font-bold text-base">Nova Ficha de Treino</p>
                   <button onClick={() => setShowNewPlan(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">

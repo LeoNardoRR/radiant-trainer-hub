@@ -140,11 +140,13 @@ export const useSendMessage = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ receiverId, content }: { receiverId: string; content: string }) => {
+    mutationFn: async ({ receiverId, content, fileUrl, fileType }: { receiverId: string; content: string; fileUrl?: string; fileType?: string }) => {
       const { error } = await supabase.from("messages").insert({
         sender_id: user!.id,
         receiver_id: receiverId,
         content: content.trim(),
+        file_url: fileUrl,
+        file_type: fileType,
       });
       if (error) throw error;
     },

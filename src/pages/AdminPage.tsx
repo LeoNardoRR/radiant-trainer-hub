@@ -65,6 +65,40 @@ const AdminPage = () => {
     },
   });
 
+  // All payment plans
+  const { data: paymentPlans, isLoading: loadingPaymentPlans } = useQuery({
+    queryKey: ["admin-payment-plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payment_plans" as any)
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // All workout plans
+  const { data: workoutPlans, isLoading: loadingWorkoutPlans } = useQuery({
+    queryKey: ["admin-workout-plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workout_plans" as any)
+        .select("*, workout_exercises(*)")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      // Enrich with student + trainer names
+      const uids = [...new Set((data as any[]).map(p => p.student_id).concat((data as any[]).map(p => p.trainer_id)))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", uids);
+      const pMap = new Map((profiles || []).map(p => [p.user_id, p.full_name]));
+      return (data as any[]).map(p => ({
+        ...p,
+        studentName: pMap.get(p.student_id),
+        trainerName: pMap.get(p.trainer_id)
+      }));
+    },
+  });
+
   const totalRevenue = (payments || [])
     .filter((p: any) => p.status === "paid")
     .reduce((s: number, p: any) => s + Number(p.amount), 0);
@@ -87,6 +121,8 @@ const AdminPage = () => {
     { key: "trainers", label: `Trainers (${trainers?.length ?? 0})` },
     { key: "students", label: `Alunos (${students?.length ?? 0})` },
     { key: "payments", label: `Pagamentos (${payments?.length ?? 0})` },
+    { key: "payment_plans", label: `Planos Pag. (${paymentPlans?.length ?? 0})` },
+    { key: "workout_plans", label: `Fichas Treino (${workoutPlans?.length ?? 0})` },
   ];
 
   const statusConfig: Record<string, { label: string; color: string; bg: string; icon: any }> = {
@@ -257,6 +293,59 @@ const AdminPage = () => {
                 </motion.div>
               );
             })}
+          </motion.div>
+        )}
+
+        {/* ── PAYMENT PLANS ── */}
+        {tab === "payment_plans" && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="space-y-2">
+            {loadingPaymentPlans ? (
+              <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted/50 rounded-2xl animate-pulse" />)}</div>
+            ) : !paymentPlans?.length ? (
+              <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                <DollarSign className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm font-semibold">Nenhum plano de pagamento</p>
+              </div>
+            ) : paymentPlans.map((p: any, i: number) => (
+              <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{p.name}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">R$ {Number(p.price).toFixed(2)} · {p.sessions_per_month ?? 0} aulas/mês</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* ── WORKOUT PLANS ── */}
+        {tab === "workout_plans" && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="space-y-2">
+            {loadingWorkoutPlans ? (
+              <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="h-16 bg-muted/50 rounded-2xl animate-pulse" />)}</div>
+            ) : !workoutPlans?.length ? (
+              <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                <Dumbbell className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm font-semibold">Nenhuma ficha de treino</p>
+              </div>
+            ) : workoutPlans.map((p: any, i: number) => (
+              <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                  <Dumbbell className="h-4 w-4 text-success" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{p.name}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">Aluno: {p.studentName} · Prof: {p.trainerName}</p>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${p.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                  {p.is_active ? "Ativa" : "Inativa"}
+                </span>
+              </motion.div>
+            ))}
           </motion.div>
         )}
       </div>

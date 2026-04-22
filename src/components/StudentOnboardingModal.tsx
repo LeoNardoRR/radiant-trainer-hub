@@ -161,7 +161,7 @@ const StudentOnboardingModal = ({ studentId, studentName, onClose }: StudentOnbo
           className="relative w-full sm:max-w-md mx-4 mb-0 sm:mb-0"
         >
           <div
-            className="bg-background border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+            className="bg-background border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-y-auto max-h-[92dvh]"
             style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
           >
             {/* Progress */}

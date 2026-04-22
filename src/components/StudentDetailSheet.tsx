@@ -125,8 +125,8 @@ const StudentDetailSheet = ({ student, onClose }: StudentDetailSheetProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 80 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="relative bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
-            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+            className="relative bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-y-auto"
+            style={{ maxHeight: "90dvh", paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
           >
             {/* ── Header ── */}
             <div className="p-5 pb-3 flex items-start gap-4">
