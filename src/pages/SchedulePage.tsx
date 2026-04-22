@@ -188,23 +188,23 @@ const SchedulePage = () => {
     const daySessions = sessionsForDay(day).sort((a, b) => a.start_time?.localeCompare(b.start_time));
     const canAdd      = role === "trainer" && !isBefore(day, new Date(new Date().setHours(0,0,0,0)));
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 pb-4">
         {daySessions.length === 0 ? (
           canAdd ? (
             <button onClick={() => openCreate(day)}
-              className="w-full py-6 rounded-2xl border-2 border-dashed border-primary/30 text-primary/50 text-sm font-bold flex flex-col items-center gap-1.5 hover:border-primary/60 hover:text-primary transition-colors">
+              className="w-full py-8 rounded-2xl border-2 border-dashed border-primary/30 text-primary/50 text-sm font-bold flex flex-col items-center gap-1.5 hover:border-primary/60 hover:text-primary transition-colors bg-primary/5">
               <Plus className="h-5 w-5" />
               Agendar sessão
             </button>
           ) : (
-            <div className="py-6 text-center text-sm text-muted-foreground">Nenhuma sessão</div>
+            <div className="py-8 text-center text-sm text-muted-foreground bg-muted/20 rounded-2xl border border-dashed border-border">Nenhuma sessão</div>
           )
         ) : (
           <>
             {daySessions.map((s: any) => <SessionCard key={s.id} s={s} />)}
             {canAdd && (
               <button onClick={() => openCreate(day)}
-                className="w-full py-2.5 rounded-xl border border-dashed border-primary/20 text-primary/40 text-xs font-bold hover:border-primary/40 hover:text-primary/70 transition-colors flex items-center justify-center gap-1.5">
+                className="w-full py-3 rounded-xl border border-dashed border-primary/20 text-primary/40 text-xs font-bold hover:border-primary/40 hover:text-primary/70 transition-colors flex items-center justify-center gap-1.5">
                 <Plus className="h-3.5 w-3.5" /> Adicionar
               </button>
             )}
@@ -529,10 +529,13 @@ const SchedulePage = () => {
       {/* ══ CREATE SESSION MODAL ════════════════════════════ */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <motion.div
+            <motion.div
             initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
-            className="bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-y-auto max-h-[92dvh]"
-            style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+            className="bg-background border border-border w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-y-auto"
+            style={{ 
+              maxHeight: "92dvh",
+              paddingBottom: "max(2rem, env(safe-area-inset-bottom))" 
+            }}
             onClick={e => e.stopPropagation()}>
             <div className="p-5 space-y-5">
               {/* Handle */}

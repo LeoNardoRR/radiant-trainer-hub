@@ -175,7 +175,7 @@ const MessagesPage = () => {
         </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
-          className="border border-border rounded-2xl overflow-hidden bg-card flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0 h-[65dvh] min-h-[450px]"
+          className="border border-border rounded-2xl overflow-hidden bg-card flex flex-col md:grid md:grid-cols-[300px_1fr] md:gap-0 h-[68dvh] md:h-[72dvh] min-h-[480px]"
         >
           {/* Conversation list */}
           <div className={`border-r border-border overflow-y-auto ${
@@ -348,11 +348,11 @@ const MessagesPage = () => {
                   )}
                   <div ref={messagesEndRef} />
                 </div>
-                <div className="p-3 border-t border-border bg-background safe-bottom">
+                <div className="p-3 border-t border-border bg-background" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
                   <div className="flex gap-2">
                     <Input value={message} onChange={(e) => setMessage(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                      placeholder="Escreva uma mensagem..." className="font-body h-12 rounded-2xl" />
+                      placeholder="Escreva uma mensagem..." className="font-body h-12 rounded-2xl bg-muted/20" />
                     <button onClick={handleSend} disabled={!message.trim()}
                       className="p-3 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90 transition-all min-h-[48px] min-w-[48px] flex items-center justify-center shadow-lg shadow-primary/20 disabled:opacity-40 disabled:shadow-none active:scale-95">
                       <Send className="h-5 w-5" strokeWidth={1.5} />

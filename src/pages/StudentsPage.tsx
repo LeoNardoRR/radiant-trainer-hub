@@ -133,7 +133,7 @@ const StudentsPage = () => {
             </p>
           </motion.div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-2 pb-10">
             {filtered.map((student, i) => {
               const color  = AVATAR_COLORS[student.full_name.charCodeAt(0) % AVATAR_COLORS.length];
               const dot    = statusDot[student.status]      ?? statusDot.active;

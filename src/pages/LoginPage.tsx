@@ -55,10 +55,10 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-y-auto">
+    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
       {/* Left panel — desktop só */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/8 via-primary/3 to-background items-center justify-center p-12">
-        <div className="max-w-sm">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/8 via-primary/3 to-background items-center justify-center p-12 shrink-0">
+        <div className="max-w-sm sticky top-1/2 -translate-y-1/2">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="flex items-center gap-2.5 mb-10">
             <AppIcon size="md" />
@@ -75,7 +75,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center p-6 py-10">
+      <div className="flex-1 flex items-center justify-center p-6 py-12 md:py-20 min-h-[100dvh]">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
