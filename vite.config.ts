@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: true, // Listen on all addresses, including LAN and public
     port: 8080,
     hmr: {
       overlay: false,
@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
   react(),
   mode === "development" && componentTagger(),
   VitePWA({
-    registerType: 'prompt',
+    registerType: 'autoUpdate',
     workbox: {
       globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
       skipWaiting: true,
@@ -31,10 +31,10 @@ export default defineConfig(({ mode }) => ({
       ],
     },
     manifest: {
-      name: 'FitApp — Personal Trainer App',
-      short_name: 'FitApp',
-      description: 'Gerencie agenda, treinos e resultados de alunos.',
-      theme_color: '#7c3aed',
+      name: 'Radiant Trainer Hub',
+      short_name: 'RadiantHub',
+      description: 'Gerencie agenda, treinos e resultados de alunos com estilo.',
+      theme_color: '#1e1b4b',
       background_color: '#0d0a1a',
       display: 'standalone',
       start_url: '/dashboard',
