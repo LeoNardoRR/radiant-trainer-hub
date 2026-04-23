@@ -10,6 +10,7 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { greeting } from "./StudentDashboard";
+import { AISummaryWidget } from "./AISummaryWidget";
 
 const stagger = {
   hidden: {},
@@ -85,6 +86,18 @@ export const TrainerDashboard = () => {
           <h1 className="text-[1.75rem] font-black tracking-tight leading-tight">
             {greeting(profile?.full_name)}
           </h1>
+        </motion.div>
+
+        {/* ── AI Summary ------------------------------------- */}
+        <motion.div variants={item}>
+          <AISummaryWidget 
+            trainerName={profile?.full_name}
+            stats={{
+              sessionsToday: todaySessions.length,
+              atRiskCount: atRiskStudents,
+              pendingRequests: pendingSessions.length
+            }}
+          />
         </motion.div>
 
         {/* ── Key metrics ------------------------------------- */}

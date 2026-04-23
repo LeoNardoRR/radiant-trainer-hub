@@ -15,6 +15,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useStudentAccess } from "@/hooks/useStudentAccess";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useProgressPhotos, useCreateProgressPhoto, useDeleteProgressPhoto } from "@/hooks/useProgressPhotos";
+import { PhotoComparison } from "@/components/PhotoComparison";
+import { Camera, Image as ImageIcon } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -47,12 +50,21 @@ const ProgressPage = () => {
   const [newDate, setNewDate] = useState(new Date().toISOString().split("T")[0]);
   const [newNotes, setNewNotes] = useState("");
   const [newValues, setNewValues] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState<"measures" | "photos">("measures");
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [photoType, setPhotoType] = useState<"front" | "side" | "back" | "other">("other");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const { data: students } = useStudents();
   const { data: measurements, isLoading } = useBodyMeasurements(selectedStudent);
   const { data: weightHistory } = useWeightHistory(selectedStudent);
+  const { data: photos, isLoading: photosLoading } = useProgressPhotos(selectedStudent);
+  
   const createMeasurement = useCreateBodyMeasurement();
   const deleteMeasurement = useDeleteBodyMeasurement();
+  const createPhoto = useCreateProgressPhoto();
+  const deletePhoto = useDeleteProgressPhoto();
 
   const targetStudentId = isTrainer ? selectedStudent : undefined;
 
@@ -72,6 +84,36 @@ const ProgressPage = () => {
     setNewNotes("");
   };
 
+  const handlePhotoUpload = async () => {
+    if (!photoPreview || !selectedStudent) return;
+    
+    // In a real app, you'd upload to Supabase Storage first
+    // For now, let's assume we have a URL or use a placeholder
+    const mockUrl = photoPreview; // Normally would be the returned URL from storage
+
+    await createPhoto.mutateAsync({
+      student_id: selectedStudent,
+      photo_url: mockUrl,
+      type: photoType,
+      captured_at: newDate,
+      notes: newNotes || undefined,
+    });
+    
+    setShowPhotoUpload(false);
+    setPhotoPreview(null);
+    setPhotoFile(null);
+  };
+
+  const onPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const latestMeasurement = measurements?.[0];
 
   return (
@@ -87,11 +129,29 @@ const ProgressPage = () => {
             <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Acompanhamento</h1>
           </div>
           {isTrainer && selectedStudent && (
-            <Button onClick={() => setShowNewMeasure(true)} className="gap-2 rounded-xl h-11">
-              <Plus className="h-4 w-4" /> Nova avaliação
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => activeTab === "measures" ? setShowNewMeasure(true) : setShowPhotoUpload(true)} className="gap-2 rounded-xl h-11">
+                <Plus className="h-4 w-4" /> Nova {activeTab === "measures" ? "avaliação" : "foto"}
+              </Button>
+            </div>
           )}
         </motion.div>
+
+        {/* Tab Switcher */}
+        {selectedStudent && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0.5} className="flex p-1 bg-muted rounded-2xl w-full sm:w-fit">
+            <button 
+              onClick={() => setActiveTab("measures")}
+              className={`flex-1 sm:flex-none px-6 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === "measures" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              Medidas
+            </button>
+            <button 
+              onClick={() => setActiveTab("photos")}
+              className={`flex-1 sm:flex-none px-6 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === "photos" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              Fotos
+            </button>
+          </motion.div>
+        )}
 
         {/* Student selector (trainer only) */}
         {isTrainer && (
@@ -122,7 +182,7 @@ const ProgressPage = () => {
             <p className="font-semibold">Selecione um aluno</p>
             <p className="text-sm text-muted-foreground mt-1">Escolha um aluno para ver o progresso.</p>
           </motion.div>
-        ) : (
+        ) : activeTab === "measures" ? (
           <>
             {/* Weight chart */}
             {weightHistory && weightHistory.length > 1 && (
@@ -241,8 +301,110 @@ const ProgressPage = () => {
               )}
             </motion.div>
           </>
+        ) : (
+          <div className="space-y-6">
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}>
+              <PhotoComparison photos={photos || []} />
+            </motion.div>
+
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="space-y-3">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Galeria de Fotos</p>
+              {photos?.length === 0 ? (
+                <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                  <Camera className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm font-semibold">Nenhuma foto registrada</p>
+                  <p className="text-xs text-muted-foreground mt-1">Registre fotos para acompanhar a mudança visual.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {photos?.map((photo) => (
+                    <div key={photo.id} className="relative group aspect-[3/4] bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+                      <img src={photo.photo_url} className="w-full h-full object-cover" alt="Evolução" />
+                      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent pt-8">
+                        <p className="text-[10px] font-black text-white uppercase tracking-tighter">
+                          {format(parseISO(photo.captured_at), "dd MMM yyyy", { locale: ptBR })}
+                        </p>
+                        <p className="text-[9px] text-white/70 font-bold uppercase">{photo.type}</p>
+                      </div>
+                      {isTrainer && (
+                        <button 
+                          onClick={() => confirm("Excluir foto?") && deletePhoto.mutate({ id: photo.id, studentId: selectedStudent! })}
+                          className="absolute top-2 right-2 p-1.5 bg-risk text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
         )}
       </div>
+
+      {/* ── Modal: Nova Foto ───────────────────── */}
+      <AnimatePresence>
+        {showPhotoUpload && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setShowPhotoUpload(false)}>
+            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+              className="bg-background border border-border rounded-t-3xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl max-h-[92dvh] overflow-y-auto"
+              style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+              onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <p className="font-bold text-base">Adicionar Foto</p>
+                <button onClick={() => setShowPhotoUpload(false)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-accent rounded-xl">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <label className="w-full aspect-square max-w-[240px] border-2 border-dashed border-border rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors bg-muted/20 overflow-hidden relative">
+                    {photoPreview ? (
+                      <img src={photoPreview} className="w-full h-full object-cover" alt="Preview" />
+                    ) : (
+                      <>
+                        <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                        <span className="text-xs font-bold text-muted-foreground">Clique para selecionar</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
+                  </label>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tipo</label>
+                    <select 
+                      value={photoType} 
+                      onChange={(e) => setPhotoType(e.target.value as any)}
+                      className="w-full h-11 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="front">Frente</option>
+                      <option value="side">Lado</option>
+                      <option value="back">Costas</option>
+                      <option value="other">Outro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Data</label>
+                    <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="h-11 rounded-xl" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notas (opcional)</label>
+                  <textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} placeholder="Ex: Pós-treino, em jejum..."
+                    rows={2} className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                </div>
+
+                <Button onClick={handlePhotoUpload} disabled={!photoPreview || createPhoto.isPending} className="w-full h-12 rounded-xl">
+                  {createPhoto.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Camera className="h-4 w-4 mr-2" />}
+                  Salvar Foto
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ── Modal: Nova Avaliação ───────────────────── */}
       <AnimatePresence>

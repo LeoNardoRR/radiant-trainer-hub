@@ -2,6 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export interface Student {
+  user_id: string;
+  full_name: string;
+  email: string;
+  status: 'active' | 'at_risk' | 'inactive';
+  trainer_id?: string;
+  phone?: string;
+  notes?: string;
+  created_at: string;
+}
+
 export const useStudents = () => {
   const { user } = useAuth();
 
@@ -14,7 +25,7 @@ export const useStudents = () => {
         .eq("trainer_id", user!.id)
         .order("full_name");
       if (error) throw error;
-      return data;
+      return data as Student[];
     },
     enabled: !!user,
   });

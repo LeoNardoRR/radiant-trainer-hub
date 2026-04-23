@@ -2,9 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Dumbbell, ChevronDown, ChevronUp, CheckCircle2, X, Loader2,
-  Flame, Clock, Zap, Heart, Moon, Battery,
+  Flame, Clock, Zap, Heart, Moon, Battery, Play,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import { WorkoutPlayer } from "@/components/WorkoutPlayer";
 import { Button } from "@/components/ui/button";
 import PaymentRequiredWall from "@/components/PaymentRequiredWall";
 import { useStudentWorkoutPlans, useLogWorkoutExecution, useWorkoutExecutions } from "@/hooks/useWorkouts";
@@ -31,6 +32,7 @@ const MyWorkoutsPage = () => {
   const [sleep, setSleep] = useState(3);
   const [notes, setNotes] = useState("");
   const [duration, setDuration] = useState("");
+  const [activeWorkout, setActiveWorkout] = useState<any>(null);
 
   const { data: plans, isLoading } = useStudentWorkoutPlans();
   const { data: executions } = useWorkoutExecutions();
@@ -107,9 +109,13 @@ const MyWorkoutsPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={(e) => { e.stopPropagation(); setActiveWorkout(plan); }}
+                        className="h-9 px-3 rounded-xl text-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Play className="h-3.5 w-3.5 fill-current" /> Iniciar
+                      </Button>
                       <Button size="sm" onClick={(e) => { e.stopPropagation(); setShowFeedback(plan.id); }}
-                        className="h-9 px-3 rounded-xl text-xs gap-1.5 bg-success hover:bg-success/90 text-success-foreground">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Concluir
+                        className="h-9 px-3 rounded-xl text-xs gap-1.5 bg-success/10 hover:bg-success/20 text-success border border-success/20">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Log
                       </Button>
                       {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
@@ -208,6 +214,20 @@ const MyWorkoutsPage = () => {
           </motion.div>
         )}
       </div>
+
+      {/* ── Active Workout Player ───────────────────── */}
+      <AnimatePresence>
+        {activeWorkout && (
+          <WorkoutPlayer 
+            planName={activeWorkout.name}
+            exercises={activeWorkout.workout_exercises || []}
+            onClose={(completed) => {
+              if (completed) setShowFeedback(activeWorkout.id);
+              setActiveWorkout(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Modal: Feedback pós-treino ──────────────── */}
       <AnimatePresence>

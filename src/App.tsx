@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OnboardingTour from "@/components/OnboardingTour";
 import ScrollToTop from "@/components/ScrollToTop";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -174,6 +175,7 @@ const App = () => (
                 </ErrorBoundary>
                 <OnboardingTour />
                 <DemoBanner />
+                <PWAInstallPrompt />
               </DemoModeProvider>
             </AuthProvider>
           </BrowserRouter>

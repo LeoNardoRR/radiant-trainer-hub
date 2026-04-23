@@ -2,10 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DollarSign, Plus, X, Loader2, CheckCircle2, Clock, AlertTriangle,
-  XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard, UserPlus,
+  XCircle, Users, TrendingUp, Package, ChevronDown, ChevronUp, Trash2, CreditCard, UserPlus, FileText,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import PlanGate from "@/components/PlanGate";
+import { ReceiptModal } from "@/components/ReceiptModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -43,6 +44,7 @@ const PaymentsPage = () => {
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [showNewPlan, setShowNewPlan] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewReceipt, setViewReceipt] = useState<any>(null);
 
   // New payment form
   const [payStudent, setPayStudent] = useState("");
@@ -347,9 +349,12 @@ const PaymentsPage = () => {
                             </div>
                           )}
                           {isTrainer && (
-                            <button onClick={() => { if (confirm("Remover cobrança?")) deletePayment.mutate(payment.id); }}
-                              className="p-1 hover:bg-risk/10 rounded-lg transition-colors">
-                              <Trash2 className="h-3.5 w-3.5 text-risk/60 hover:text-risk" />
+                            </button>
+                          )}
+                          {payment.status === "paid" && (
+                            <button onClick={() => setViewReceipt(payment)}
+                              className="flex items-center gap-1 text-[10px] bg-primary/10 text-primary px-2.5 py-1.5 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors font-bold min-h-[28px]">
+                              <FileText className="h-3 w-3" /> Recibo
                             </button>
                           )}
                           {payment.status === "paid" && payment.paid_at && (
@@ -618,6 +623,16 @@ const PaymentsPage = () => {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {viewReceipt && (
+          <ReceiptModal 
+            payment={viewReceipt} 
+            trainerName={isTrainer ? profile?.full_name : viewReceipt.trainer?.full_name}
+            onClose={() => setViewReceipt(null)} 
+          />
         )}
       </AnimatePresence>
         </PlanGate>

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Search, UserPlus, ChevronRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
-import { useStudents } from "@/hooks/useStudents";
+import { useStudents, Student } from "@/hooks/useStudents";
 import { Skeleton } from "@/components/ui/skeleton";
 import StudentDetailSheet from "@/components/StudentDetailSheet";
 import { Link } from "react-router-dom";
@@ -39,7 +39,7 @@ const item    = {
 const StudentsPage = () => {
   const [search, setSearch]               = useState("");
   const [filter, setFilter]               = useState<FilterStatus>("all");
-  const [selectedStudent, setSelected]    = useState<any>(null);
+  const [selectedStudent, setSelected]    = useState<Student | null>(null);
   const { data: students, isLoading }     = useStudents();
 
   const counts = {
