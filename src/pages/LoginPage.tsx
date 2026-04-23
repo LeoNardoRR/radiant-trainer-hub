@@ -27,9 +27,10 @@ const LoginPage = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
+    mode: "onChange",
     defaultValues: {
       email: "",
       password: "",
@@ -55,7 +56,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
+    <div className="min-h-[100dvh] bg-background flex flex-col lg:flex-row">
       {/* Left panel — desktop só */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/8 via-primary/3 to-background items-center justify-center p-12 shrink-0">
         <div className="max-w-sm sticky top-1/2 -translate-y-1/2">
@@ -143,8 +144,8 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full h-13 text-[15px] py-3 mt-4">
-              {isLoading
+            <Button type="submit" disabled={isLoading || isSubmitting} className="w-full h-13 text-[15px] py-3 mt-4 active:scale-[0.98] transition-transform">
+              {(isLoading || isSubmitting)
                 ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Entrando...</>
                 : <>Entrar<ArrowRight className="ml-1.5 h-4 w-4" /></>
               }

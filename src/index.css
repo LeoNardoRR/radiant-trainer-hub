@@ -105,9 +105,9 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-    /* Lock html — AppLayout main owns all scrolling */
     height: 100%;
-    overflow: hidden;
+    /* Allow scrolling by default, AppLayout will handle its own locking */
+    overflow-y: auto;
   }
 
   body {
@@ -117,10 +117,8 @@
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
     touch-action: manipulation;
-    /* Lock body too — no double scrolling */
     height: 100%;
-    overflow: hidden;
-    /* Public pages (landing/login) rely on min-height on their own containers */
+    overflow-y: auto;
   }
 
   h1, h2, h3, h4, h5, h6 {

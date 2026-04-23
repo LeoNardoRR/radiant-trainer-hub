@@ -16,8 +16,10 @@ export const PWAInstallPrompt = () => {
       e.preventDefault();
       setDeferredPrompt(e);
       
+      // On localhost, always show for easier testing
+      const isLocal = window.location.hostname === "localhost";
       const hasSeen = localStorage.getItem("pwa_prompt_seen");
-      if (!hasSeen) setShow(true);
+      if (!hasSeen || isLocal) setShow(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -28,8 +30,9 @@ export const PWAInstallPrompt = () => {
 
     // Force show after a few seconds if not seen, regardless of event (fallback)
     const timer = setTimeout(() => {
+      const isLocal = window.location.hostname === "localhost";
       const hasSeen = localStorage.getItem("pwa_prompt_seen");
-      if (!hasSeen) setShow(true);
+      if (!hasSeen || isLocal) setShow(true);
     }, 4000);
 
     return () => {
@@ -97,10 +100,10 @@ export const PWAInstallPrompt = () => {
                 <button 
                   onClick={handleInstallClick}
                   disabled={!deferredPrompt}
-                  className="w-full h-10 bg-primary text-primary-foreground rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+                  className="w-full h-12 bg-primary text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:bg-muted disabled:text-muted-foreground shadow-lg shadow-primary/20"
                 >
                   <Download className="h-4 w-4" /> 
-                  {deferredPrompt ? "Instalar Agora" : "Clique nos 3 pontos p/ instalar"}
+                  {deferredPrompt ? "Instalar Agora" : "Use o ícone de instalar do navegador"}
                 </button>
               )}
             </div>
