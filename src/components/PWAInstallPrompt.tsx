@@ -6,24 +6,49 @@ import { AppIcon } from "./AppIcon";
 export const PWAInstallPrompt = () => {
   const [show, setShow] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) return;
 
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      
+      const hasSeen = localStorage.getItem("pwa_prompt_seen");
+      if (!hasSeen) setShow(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isAndroid = /Android/.test(navigator.userAgent);
-
     setPlatform(isIOS ? "ios" : isAndroid ? "android" : "other");
 
-    // Show after 10 seconds of first visit
+    // Force show after a few seconds if not seen, regardless of event (fallback)
     const timer = setTimeout(() => {
       const hasSeen = localStorage.getItem("pwa_prompt_seen");
       if (!hasSeen) setShow(true);
-    }, 10000);
+    }, 4000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setShow(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   const handleDismiss = () => {
     setShow(false);
@@ -45,11 +70,11 @@ export const PWAInstallPrompt = () => {
             </button>
 
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
-                <AppIcon className="h-6 w-6 text-primary" />
-              </div>
+            <div className="shrink-0">
+              <AppIcon size="lg" />
+            </div>
               <div className="flex-1 space-y-1">
-                <p className="text-sm font-bold tracking-tight">Instalar Radiant Hub</p>
+                <p className="text-sm font-bold tracking-tight">Instalar FitApp</p>
                 <p className="text-[11px] text-muted-foreground leading-snug">
                   Adicione o app à sua tela inicial para acesso rápido e offline.
                 </p>
@@ -70,10 +95,12 @@ export const PWAInstallPrompt = () => {
                 </div>
               ) : (
                 <button 
-                  onClick={() => alert("Toque nos três pontos do navegador e selecione 'Instalar Aplicativo'.")}
-                  className="w-full h-10 bg-primary text-primary-foreground rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  onClick={handleInstallClick}
+                  disabled={!deferredPrompt}
+                  className="w-full h-10 bg-primary text-primary-foreground rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  <Download className="h-4 w-4" /> Instalar Agora
+                  <Download className="h-4 w-4" /> 
+                  {deferredPrompt ? "Instalar Agora" : "Clique nos 3 pontos p/ instalar"}
                 </button>
               )}
             </div>

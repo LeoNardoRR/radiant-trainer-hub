@@ -27,7 +27,7 @@ export const ReceiptModal = ({ payment, trainerName, onClose }: ReceiptModalProp
           </div>
           <div>
             <h2 className="text-xl font-black tracking-tight uppercase">Recibo de Pagamento</h2>
-            <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mt-1">Radiant Trainer Hub</p>
+            <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mt-1">FitApp</p>
           </div>
         </div>
 

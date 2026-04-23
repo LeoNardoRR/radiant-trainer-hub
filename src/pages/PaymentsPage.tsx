@@ -349,6 +349,9 @@ const PaymentsPage = () => {
                             </div>
                           )}
                           {isTrainer && (
+                            <button onClick={() => { if (confirm("Remover cobrança?")) deletePayment.mutate(payment.id); }}
+                              className="p-1 hover:bg-risk/10 rounded-lg transition-colors">
+                              <Trash2 className="h-3.5 w-3.5 text-risk/60 hover:text-risk" />
                             </button>
                           )}
                           {payment.status === "paid" && (

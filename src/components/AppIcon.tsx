@@ -22,10 +22,10 @@ export const AppIcon = ({ size = "md", className = "" }: AppIconProps) => {
 
   return (
     <div 
-      className={`overflow-hidden flex items-center justify-center shadow-lg shrink-0 ${sizeClasses[size]} ${className}`} 
-      style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)" }}
+      className={`overflow-hidden flex items-center justify-center shrink-0 ${sizeClasses[size]} ${className}`} 
+      style={{ backgroundColor: "#7C3AED" }}
     >
-      <Zap className={`text-white fill-white ${iconSizes[size]}`} strokeWidth={2} />
+      <Zap className={`text-white fill-white ${iconSizes[size]}`} strokeWidth={2.5} />
     </div>
   );
 };

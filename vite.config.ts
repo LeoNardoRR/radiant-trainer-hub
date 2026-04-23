@@ -31,8 +31,8 @@ export default defineConfig(({ mode }) => ({
       ],
     },
     manifest: {
-      name: 'Radiant Trainer Hub',
-      short_name: 'RadiantHub',
+      name: 'FitApp',
+      short_name: 'FitApp',
       description: 'Gerencie agenda, treinos e resultados de alunos com estilo.',
       theme_color: '#1e1b4b',
       background_color: '#0d0a1a',
