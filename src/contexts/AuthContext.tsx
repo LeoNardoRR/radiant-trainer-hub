@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type AppRole = "trainer" | "student" | "admin";
 export type PlanTier = "starter" | "pro" | "business";
@@ -27,6 +28,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string, role: AppRole) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  toggleAdminMode: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -141,8 +143,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearUserData();
   };
 
+  const toggleAdminMode = () => {
+    if (role === "admin") {
+      // To revert, we just reload the real role from DB
+      if (user) loadUserData(user.id);
+    } else {
+      setRole("admin");
+      toast.success("Modo Admin ativado (Local)");
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, profile, role, planTier, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, role, planTier, loading, signUp, signIn, signOut, toggleAdminMode }}>
       {children}
     </AuthContext.Provider>
   );

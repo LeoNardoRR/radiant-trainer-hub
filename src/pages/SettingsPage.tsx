@@ -23,7 +23,7 @@ const fadeUp = {
 };
 
 const SettingsPage = () => {
-  const { profile, user, role } = useAuth();
+  const { profile, user, role, toggleAdminMode } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { tier, config } = usePlan();
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -535,6 +535,16 @@ const SettingsPage = () => {
               "Salvar alterações"
             )}
           </Button>
+        </motion.div>
+
+        {/* Developer / Admin Toggle */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5} className="pt-10 flex justify-center">
+          <button 
+            onClick={toggleAdminMode} 
+            className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground transition-colors uppercase tracking-widest font-black"
+          >
+            Modo Desenvolvedor (Local)
+          </button>
         </motion.div>
       </div>
       <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
