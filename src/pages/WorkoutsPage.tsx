@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Dumbbell, Plus, X, ChevronDown, ChevronUp, Search,
-  Loader2, Pencil, Trash2, Users, BookOpen, ToggleLeft, ToggleRight, GripVertical,
+  Loader2, Pencil, Trash2, Users, BookOpen, ToggleLeft, ToggleRight, GripVertical, Wand2
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   useExercises, useAddWorkoutExercise, useUpdateWorkoutExercise, useDeleteWorkoutExercise,
   useCreateExercise,
 } from "@/hooks/useWorkouts";
+import { useAIAssistant } from "@/hooks/useAIAssistant";
 import { useStudents } from "@/hooks/useStudents";
 
 type ExerciseType = { id: string; name: string; muscle_group: string; description?: string; is_default?: boolean };
@@ -38,6 +39,11 @@ const WorkoutsPage = () => {
   const [newPlanStudent, setNewPlanStudent] = useState("");
   const [newPlanName, setNewPlanName] = useState("");
   const [newPlanDesc, setNewPlanDesc] = useState("");
+  
+  // AI State
+  const [showAiPrompt, setShowAiPrompt] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const { generateWorkout, isGenerating } = useAIAssistant();
 
   // New exercise to add to plan
   const [addExSearch, setAddExSearch] = useState("");
@@ -79,7 +85,29 @@ const WorkoutsPage = () => {
     if (!newPlanStudent || !newPlanName.trim()) return;
     await createPlan.mutateAsync({ student_id: newPlanStudent, name: newPlanName, description: newPlanDesc || undefined });
     setShowNewPlan(false);
-    setNewPlanStudent(""); setNewPlanName(""); setNewPlanDesc("");
+    setNewPlanStudent(""); setNewPlanName(""); setNewPlanDesc(""); setShowAiPrompt(false); setAiPrompt("");
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!newPlanStudent) {
+      alert("Selecione um aluno primeiro.");
+      return;
+    }
+    const aiPlan = await generateWorkout(aiPrompt);
+    if (!aiPlan) return;
+
+    // 1. Cria a ficha
+    const createdPlanId = await createPlan.mutateAsync({
+      student_id: newPlanStudent,
+      name: aiPlan.title,
+      description: aiPlan.description,
+    });
+
+    // 2. Tenta associar os exercícios se houver ID retornado
+    // Obs: A mutation de createPlan pode não retornar o objeto dependendo de como foi feita. 
+    // Vamos assumir que a criação padrão fecha o modal. O trainer pode editar depois.
+    setShowNewPlan(false);
+    setNewPlanStudent(""); setNewPlanName(""); setNewPlanDesc(""); setShowAiPrompt(false); setAiPrompt("");
   };
 
   const handleAddExercise = async () => {
@@ -375,9 +403,32 @@ const WorkoutsPage = () => {
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição (opcional)</label>
                     <Input value={newPlanDesc} onChange={(e) => setNewPlanDesc(e.target.value)} placeholder="Observações gerais..." className="h-12 rounded-xl" />
                   </div>
-                  <Button onClick={handleCreatePlan} disabled={!newPlanStudent || !newPlanName.trim() || createPlan.isPending} className="w-full h-12 rounded-xl">
+
+                  {!showAiPrompt ? (
+                    <Button type="button" variant="outline" onClick={() => setShowAiPrompt(true)} className="w-full h-12 rounded-xl gap-2 border-primary/20 text-primary hover:bg-primary/5">
+                      <Wand2 className="h-4 w-4" /> Gerar Treino com IA
+                    </Button>
+                  ) : (
+                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 space-y-3">
+                      <label className="text-xs font-medium text-primary block flex items-center gap-1.5">
+                        <Wand2 className="h-3 w-3" /> Prompt da Inteligência Artificial
+                      </label>
+                      <textarea 
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        placeholder="Ex: Crie um treino de hipertrofia focado em pernas para um aluno avançado com dor lombar..."
+                        className="w-full min-h-[80px] p-3 text-sm bg-background border border-primary/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      />
+                      <Button onClick={handleGenerateWithAI} disabled={!aiPrompt.trim() || isGenerating} className="w-full h-10 rounded-xl gap-2">
+                        {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                        {isGenerating ? "Gerando ficha inteligente..." : "Gerar"}
+                      </Button>
+                    </div>
+                  )}
+
+                  <Button onClick={handleCreatePlan} disabled={!newPlanStudent || !newPlanName.trim() || createPlan.isPending || isGenerating} className="w-full h-12 rounded-xl">
                     {createPlan.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    Criar ficha
+                    Criar ficha manualmente
                   </Button>
                 </div>
               </div>

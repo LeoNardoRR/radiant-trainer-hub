@@ -12,26 +12,29 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import OnboardingTour from "@/components/OnboardingTour";
 import ScrollToTop from "@/components/ScrollToTop";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { lazy, Suspense } from "react";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import DashboardPage from "./pages/DashboardPage";
-import SchedulePage from "./pages/SchedulePage";
-import StudentClassesPage from "./pages/StudentClassesPage";
-import LeaderboardPage from "./pages/LeaderboardPage";
-import StudentsPage from "./pages/StudentsPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import MessagesPage from "./pages/MessagesPage";
-import SettingsPage from "./pages/SettingsPage";
-import WorkoutsPage from "./pages/WorkoutsPage";
-import MyWorkoutsPage from "./pages/MyWorkoutsPage";
-import ProgressPage from "./pages/ProgressPage";
-import PaymentsPage from "./pages/PaymentsPage";
 import InvitePage from "./pages/InvitePage";
 import NotFound from "./pages/NotFound";
-import AdminPage from "./pages/AdminPage";
+
+// Lazy loaded protected routes (Code Splitting)
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const SchedulePage = lazy(() => import("./pages/SchedulePage"));
+const StudentClassesPage = lazy(() => import("./pages/StudentClassesPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
+const StudentsPage = lazy(() => import("./pages/StudentsPage"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const WorkoutsPage = lazy(() => import("./pages/WorkoutsPage"));
+const MyWorkoutsPage = lazy(() => import("./pages/MyWorkoutsPage"));
+const ProgressPage = lazy(() => import("./pages/ProgressPage"));
+const PaymentsPage = lazy(() => import("./pages/PaymentsPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,7 +71,13 @@ const PageWrap = ({ children }: { children: React.ReactNode }) => (
     exit="exit"
     style={{ willChange: "opacity, transform" }}
   >
-    {children}
+    <Suspense fallback={
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+      </div>
+    }>
+      {children}
+    </Suspense>
   </motion.div>
 );
 
@@ -143,15 +152,19 @@ const AppRoutes = () => {
         <Route path="/dashboard"    element={<ProtectedRoute><PageWrap><DashboardPage /></PageWrap></ProtectedRoute>} />
         <Route path="/schedule"     element={<ProtectedRoute><PageWrap><ScheduleRouter /></PageWrap></ProtectedRoute>} />
         <Route path="/leaderboard"  element={<ProtectedRoute><PageWrap><LeaderboardPage /></PageWrap></ProtectedRoute>} />
-        <Route path="/students"     element={<ProtectedRoute><PageWrap><StudentsPage /></PageWrap></ProtectedRoute>} />
+        
+        {/* Trainer Only Routes */}
+        <Route path="/students"     element={<ProtectedRoute allowedRoles={["trainer", "admin"]}><PageWrap><StudentsPage /></PageWrap></ProtectedRoute>} />
+        <Route path="/analytics"    element={<ProtectedRoute allowedRoles={["trainer", "admin"]}><PageWrap><AnalyticsPage /></PageWrap></ProtectedRoute>} />
+        <Route path="/payments"     element={<ProtectedRoute allowedRoles={["trainer", "admin"]}><PageWrap><PaymentsPage /></PageWrap></ProtectedRoute>} />
+        <Route path="/admin"        element={<ProtectedRoute allowedRoles={["admin"]}><PageWrap><AdminPage /></PageWrap></ProtectedRoute>} />
+        
+        {/* Shared/Student Routes */}
         <Route path="/notifications"element={<ProtectedRoute><PageWrap><NotificationsPage /></PageWrap></ProtectedRoute>} />
-        <Route path="/analytics"    element={<ProtectedRoute><PageWrap><AnalyticsPage /></PageWrap></ProtectedRoute>} />
         <Route path="/messages"     element={<ProtectedRoute><PageWrap><MessagesPage /></PageWrap></ProtectedRoute>} />
         <Route path="/settings"     element={<ProtectedRoute><PageWrap><SettingsPage /></PageWrap></ProtectedRoute>} />
         <Route path="/workouts"     element={<ProtectedRoute><PageWrap><WorkoutsRouter /></PageWrap></ProtectedRoute>} />
         <Route path="/progress"     element={<ProtectedRoute><PageWrap><ProgressPage /></PageWrap></ProtectedRoute>} />
-        <Route path="/payments"     element={<ProtectedRoute><PageWrap><PaymentsPage /></PageWrap></ProtectedRoute>} />
-        <Route path="/admin"        element={<ProtectedRoute><PageWrap><AdminPage /></PageWrap></ProtectedRoute>} />
         <Route path="*"             element={<PageWrap><NotFound /></PageWrap>} />
       </Routes>
     </AnimatePresence>

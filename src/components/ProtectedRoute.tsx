@@ -2,9 +2,17 @@ import { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
 
-const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { user, loading } = useAuth();
+type AppRole = Database["public"]["Enums"]["app_role"] | "admin";
+
+interface ProtectedRouteProps {
+  children: ReactNode;
+  allowedRoles?: AppRole[];
+}
+
+const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+  const { user, loading, role } = useAuth();
 
   if (loading) {
     return (
@@ -20,6 +28,11 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  if (allowedRoles && role && !allowedRoles.includes(role as AppRole)) {
+    // Se logado mas sem a role correta, joga de volta pro inicio logado
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return <>{children}</>;
 };

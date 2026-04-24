@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useInviteCodes, useCreateInviteCode, useRedeemInviteCode } from "@/hooks/useInviteCodes";
+import { useStudents } from "@/hooks/useStudents";
 import { usePlan, PLAN_CONFIG } from "@/hooks/usePlan";
 import UpgradeModal from "@/components/UpgradeModal";
 import { toast } from "sonner";
@@ -39,6 +40,9 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
 
   const { data: inviteCodes } = useInviteCodes();
+  const { data: students } = useStudents();
+  const studentsCount = students?.length || 0;
+
   const createInviteCode = useCreateInviteCode();
   const redeemCode = useRedeemInviteCode();
 
@@ -209,15 +213,34 @@ const SettingsPage = () => {
                 <div className="w-2 h-2 rounded-full bg-success" />
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">CONVITES</p>
               </div>
-              <Button onClick={() => createInviteCode.mutate()} disabled={createInviteCode.isPending}
-                variant="outline" className="h-10 text-xs font-medium">
-                {createInviteCode.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> :
-                  <><Ticket className="h-4 w-4 mr-1.5" /> Gerar código</>}
-              </Button>
+              
+              {/* Feature Gate: Max Students */}
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-muted-foreground hidden sm:block">
+                  Alunos: {studentsCount} / {config.maxStudents === Infinity ? "∞" : config.maxStudents}
+                </span>
+                <Button 
+                  onClick={() => createInviteCode.mutate()} 
+                  disabled={createInviteCode.isPending || (studentsCount >= config.maxStudents)}
+                  variant={studentsCount >= config.maxStudents ? "secondary" : "outline"} 
+                  className="h-10 text-xs font-medium"
+                >
+                  {createInviteCode.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> :
+                    <><Ticket className="h-4 w-4 mr-1.5" /> Gerar código</>}
+                </Button>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Gere um código e compartilhe com seu aluno. Ele pode usar o código ou o link direto.
-            </p>
+            
+            {studentsCount >= config.maxStudents ? (
+              <div className="bg-warning/10 border border-warning/20 p-3 rounded-xl text-sm text-warning font-medium">
+                Você atingiu o limite de {config.maxStudents} alunos do plano {config.label}. 
+                <button onClick={() => setShowUpgrade(true)} className="underline ml-1">Faça um upgrade</button> para adicionar mais alunos.
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Gere um código e compartilhe com seu aluno. Ele pode usar o código ou o link direto.
+              </p>
+            )}
             {inviteCodes && inviteCodes.length > 0 && (
               <div className="space-y-2">
                 {inviteCodes.slice(0, 5).map((ic) => (
@@ -452,6 +475,33 @@ const SettingsPage = () => {
               >
                 Ver todos os planos
               </button>
+            )}
+
+            {/* Painel de Faturamento (SaaS) */}
+            {tier !== "starter" && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">GATEWAY DE PAGAMENTO</p>
+                  <span className="text-[9px] bg-success/10 text-success px-2 py-0.5 rounded-full font-bold">Ativo</span>
+                </div>
+                <div className="flex flex-col gap-2 bg-muted/30 p-3 rounded-xl border border-border/50">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Provedor</span>
+                    <span className="font-semibold flex items-center gap-1">Asaas / Stripe <ExternalLink className="h-3 w-3" /></span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Próxima Fatura</span>
+                    <span className="font-semibold">05/06/2026</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Método</span>
+                    <span className="font-semibold">Cartão de Crédito (•••• 4242)</span>
+                  </div>
+                  <Button variant="outline" className="h-8 mt-2 w-full text-xs" onClick={() => toast.success("Redirecionando para o portal do cliente...")}>
+                    Gerenciar Assinatura
+                  </Button>
+                </div>
+              </div>
             )}
           </motion.div>
         )}

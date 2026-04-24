@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import PlanGate from "@/components/PlanGate";
 import PaymentRequiredWall from "@/components/PaymentRequiredWall";
 import { useBodyMeasurements, useCreateBodyMeasurement, useDeleteBodyMeasurement, useWeightHistory } from "@/hooks/useProgress";
+import { useUserStreak, useUserBadges } from "@/hooks/useGamification";
 import { useStudents } from "@/hooks/useStudents";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStudentAccess } from "@/hooks/useStudentAccess";
@@ -456,18 +457,79 @@ const ProgressPage = () => {
         /* Student with active payment — show progress info */
         <div className="space-y-6">
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">RESULTADOS</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">GAMIFICAÇÃO & RESULTADOS</p>
             <h1 className="font-bold text-2xl md:text-3xl tracking-tight">Meu Progresso</h1>
           </motion.div>
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}
+          
+          <StudentGamificationView />
+
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3}
             className="text-center py-16 bg-card border border-border rounded-2xl">
             <TrendingUp className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-            <p className="font-semibold">Progresso registrado pelo seu personal</p>
+            <p className="font-semibold">Avaliações Físicas</p>
             <p className="text-sm text-muted-foreground mt-1">Suas avaliações físicas aparecem aqui quando o personal registrá-las.</p>
           </motion.div>
         </div>
       )}
     </AppLayout>
+  );
+};
+
+const StudentGamificationView = () => {
+  const { data: streak } = useUserStreak();
+  const { data: userBadges } = useUserBadges();
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3">
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center shrink-0">
+            <span className="text-2xl">🔥</span>
+          </div>
+          <div>
+            <p className="text-2xl font-black">{streak?.current_streak || 0}</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Dias Seguidos</p>
+          </div>
+        </motion.div>
+
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1.2} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+            <span className="text-2xl">💪</span>
+          </div>
+          <div>
+            <p className="text-2xl font-black">{streak?.total_workouts || 0}</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Treinos Feitos</p>
+          </div>
+        </motion.div>
+      </div>
+
+      <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2} className="bg-card border border-border rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">MINHAS CONQUISTAS</p>
+          <span className="text-xs font-semibold bg-secondary px-2.5 py-1 rounded-full">{userBadges?.length || 0} medalhas</span>
+        </div>
+        
+        {!userBadges || userBadges.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 opacity-50">
+              <span className="text-xl">🏆</span>
+            </div>
+            <p className="text-sm font-semibold">Nenhuma conquista ainda</p>
+            <p className="text-xs text-muted-foreground mt-1">Complete treinos para desbloquear medalhas!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {userBadges.map((ub: any) => (
+              <div key={ub.id} className="bg-muted/30 border border-border/50 rounded-xl p-3 text-center flex flex-col items-center">
+                <span className="text-3xl mb-2 filter drop-shadow-sm">{ub.badge?.icon || "🏆"}</span>
+                <p className="text-xs font-bold leading-tight">{ub.badge?.name}</p>
+                <p className="text-[9px] text-muted-foreground mt-1 leading-tight">{ub.badge?.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </div>
   );
 };
 
