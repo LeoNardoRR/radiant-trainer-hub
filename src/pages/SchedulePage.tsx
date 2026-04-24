@@ -560,12 +560,26 @@ const SchedulePage = () => {
               <div>
                 <label className="label-overline mb-2 block">HORÁRIO</label>
                 <div className="flex flex-wrap gap-1.5">
-                  {HOURS.map(h => (
-                    <button key={h} onClick={() => setModalTime(h)}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                        modalTime === h ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}>{h}</button>
-                  ))}
+                  {HOURS.map(h => {
+                    const isPast = modalDate ? isBefore(parseISO(`${modalDate}T${h}`), new Date()) : false;
+                    const isOccupied = (sessions ?? []).some(s => 
+                      s.date === modalDate && 
+                      s.start_time?.slice(0, 5) === h && 
+                      !["cancelled", "rejected"].includes(s.status)
+                    );
+                    const isDisabled = isPast || isOccupied;
+
+                    return (
+                      <button key={h} onClick={() => !isDisabled && setModalTime(h)} disabled={isDisabled}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                          isDisabled ? "opacity-30 cursor-not-allowed bg-muted/50 text-muted-foreground line-through"
+                          : modalTime === h ? "bg-primary text-white" 
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}>
+                        {h}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

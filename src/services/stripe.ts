@@ -21,17 +21,30 @@ export const createCheckoutSession = async ({ tier, trainerId, email }: CreateCh
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
   // Simulando a atualização direta no banco de dados para fins de MVP
-  // Na vida real, isso seria feito via Webhook do Stripe (ex: invoice.paid)
-  const { error } = await supabase
+  // Verifica se já tem assinatura
+  const { data: existing } = await supabase
     .from("trainer_subscriptions" as any)
-    .upsert({
-      trainer_id: trainerId,
-      plan_tier: tier,
-    }, { onConflict: "trainer_id" });
+    .select("id")
+    .eq("trainer_id", trainerId)
+    .maybeSingle();
 
-  if (error) {
-    console.error("Erro ao simular assinatura:", error);
-    throw new Error("Falha ao se comunicar com o provedor de pagamentos.");
+  let dbError;
+  if (existing) {
+    const { error } = await supabase
+      .from("trainer_subscriptions" as any)
+      .update({ plan_tier: tier })
+      .eq("trainer_id", trainerId);
+    dbError = error;
+  } else {
+    const { error } = await supabase
+      .from("trainer_subscriptions" as any)
+      .insert({ trainer_id: trainerId, plan_tier: tier });
+    dbError = error;
+  }
+
+  if (dbError) {
+    console.error("Erro no Stripe DB:", dbError);
+    throw new Error(dbError.message || "Falha ao gravar assinatura.");
   }
 
   return {

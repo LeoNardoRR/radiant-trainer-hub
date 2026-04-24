@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: true, // Listen on all addresses, including LAN and public
     port: 8080,
+    allowedHosts: true,
     hmr: {
       overlay: false,
     },

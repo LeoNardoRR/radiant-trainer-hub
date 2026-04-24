@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, X, Share, PlusSquare } from "lucide-react";
 import { AppIcon } from "./AppIcon";
+import { toast } from "sonner";
 
 export const PWAInstallPrompt = () => {
   const [show, setShow] = useState(false);
@@ -42,7 +43,10 @@ export const PWAInstallPrompt = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      toast.info("Para instalar, toque nos 3 pontinhos do navegador e escolha 'Instalar Aplicativo'.");
+      return;
+    }
     
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -99,11 +103,10 @@ export const PWAInstallPrompt = () => {
               ) : (
                 <button 
                   onClick={handleInstallClick}
-                  disabled={!deferredPrompt}
-                  className="w-full h-12 bg-primary text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:bg-muted disabled:text-muted-foreground shadow-lg shadow-primary/20"
+                  className="w-full h-12 bg-primary text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-primary/20"
                 >
                   <Download className="h-4 w-4" /> 
-                  {deferredPrompt ? "Instalar Agora" : "Use o ícone de instalar do navegador"}
+                  Instalar Agora
                 </button>
               )}
             </div>

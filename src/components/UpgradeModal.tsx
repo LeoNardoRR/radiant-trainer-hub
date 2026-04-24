@@ -53,8 +53,8 @@ const UpgradeModal = ({ open, onClose }: UpgradeModalProps) => {
         // Force reload to update context
         setTimeout(() => window.location.reload(), 1500);
       }
-    } catch (error) {
-      toast.error("Erro ao iniciar checkout seguro.");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao iniciar checkout seguro.");
     } finally {
       setLoadingTier(null);
     }
