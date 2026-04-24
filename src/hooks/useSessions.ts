@@ -73,21 +73,29 @@ export const useCreateSession = () => {
         throw new Error("Não é possível agendar no passado.");
       }
 
+      const payload = {
+        student_id: session.student_id,
+        trainer_id: session.trainer_id,
+        date: session.date,
+        start_time: session.start_time,
+        end_time: session.end_time,
+        session_type: session.session_type,
+        notes: session.notes,
+        original_session_id: session.original_session_id || null,
+      };
+      
+      console.log("Tentando inserir sessão com payload:", payload);
+
       const { data, error } = await supabase
         .from("sessions")
-        .insert({
-          student_id: session.student_id,
-          trainer_id: session.trainer_id,
-          date: session.date,
-          start_time: session.start_time,
-          end_time: session.end_time,
-          session_type: session.session_type,
-          notes: session.notes,
-          original_session_id: session.original_session_id || null,
-        })
+        .insert(payload)
         .select()
         .single();
-      if (error) throw error;
+        
+      if (error) {
+        console.error("Erro do Supabase ao inserir sessão:", error);
+        throw error;
+      }
 
       // Notify student about new session
       await supabase.from("notifications").insert({
