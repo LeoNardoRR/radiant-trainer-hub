@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Zap, Crown, Building2 } from "lucide-react";
 import { usePlan, PLAN_CONFIG } from "@/hooks/usePlan";
-import type { PlanTier } from "@/contexts/AuthContext";
+import { useAuth, type PlanTier } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const TIER_ICONS = {
   starter: Zap,
@@ -32,12 +33,31 @@ interface UpgradeModalProps {
 
 const UpgradeModal = ({ open, onClose }: UpgradeModalProps) => {
   const { tier: currentTier } = usePlan();
+  const { user, profile } = useAuth();
+  const [loadingTier, setLoadingTier] = useState<PlanTier | null>(null);
   const [hoveredTier, setHoveredTier] = useState<PlanTier | null>(null);
 
-  const handleUpgrade = (tier: PlanTier) => {
-    const msg = `Olá! Gostaria de fazer upgrade do meu plano FitApp para ${PLAN_CONFIG[tier].label} (${PLAN_CONFIG[tier].price}${PLAN_CONFIG[tier].period}).`;
-    const waUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, "_blank", "noopener,noreferrer");
+  const handleUpgrade = async (tier: PlanTier) => {
+    if (!user) return;
+    setLoadingTier(tier);
+    try {
+      const { createCheckoutSession } = await import("@/services/stripe");
+      const result = await createCheckoutSession({
+        tier: tier as "pro" | "business",
+        trainerId: user.id,
+        email: profile?.email || user.email || "",
+      });
+      
+      if (result.success) {
+        toast.success("Assinatura confirmada com sucesso!");
+        // Force reload to update context
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch (error) {
+      toast.error("Erro ao iniciar checkout seguro.");
+    } finally {
+      setLoadingTier(null);
+    }
   };
 
   return (
@@ -133,13 +153,18 @@ const UpgradeModal = ({ open, onClose }: UpgradeModalProps) => {
                       </div>
                     ) : (
                       <button
-                        className={`w-full h-9 rounded-xl text-xs font-bold transition-all press-scale ${
+                        className={`w-full h-9 rounded-xl text-xs font-bold transition-all press-scale flex items-center justify-center gap-2 ${
                           isHighlighted
                             ? "bg-white text-primary hover:bg-white/90"
                             : "bg-primary text-primary-foreground hover:bg-primary/90"
                         }`}
+                        disabled={loadingTier === tier}
                       >
-                        Assinar via WhatsApp
+                        {loadingTier === tier ? (
+                          <span className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+                        ) : (
+                          "Assinar com Stripe / Asaas"
+                        )}
                       </button>
                     )}
                   </motion.div>
