@@ -27,8 +27,6 @@ export const createCheckoutSession = async ({ tier, trainerId, email }: CreateCh
     .upsert({
       trainer_id: trainerId,
       plan_tier: tier,
-      status: "active",
-      current_period_end: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
     }, { onConflict: "trainer_id" });
 
   if (error) {
